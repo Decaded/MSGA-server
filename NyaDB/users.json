@@ -1,0 +1,20 @@
+{
+	"0": {
+		"username": "admin",
+		"password": "admin123",
+		"role": "admin",
+		"approved": true
+	},
+	"1": {
+		"username": "user",
+		"password": "user123",
+		"role": "user",
+		"approved": true
+	},
+	"2": {
+		"username": "asd",
+		"password": "asd",
+		"role": "user",
+		"approved": true
+	}
+}

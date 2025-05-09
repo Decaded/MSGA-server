@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@decaded/nyadb": "^4.0.1",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "msga-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "Decaded",
+  "license": "MIT",
+  "description": ""
+}
