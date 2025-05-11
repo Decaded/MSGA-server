@@ -92,23 +92,32 @@ app.get('/check', (req, res) => {
 // User routes
 app.get('/users', (_, res) => {
 	const users = getDatabase('users');
-	const usersArray = Object.entries(users).map(([key, user]) => ({
-		id: parseInt(key), // key as numeric id
-		...user,
-	}));
+	const usersArray = Object.entries(users).map(([key, user]) => {
+		const { username, shProfileURL, role, approved } = user;
+		return {
+			id: parseInt(key),
+			username,
+			shProfileURL,
+			role,
+			approved,
+		};
+	});
 	res.json(usersArray);
 });
 
 app.put('/users/:id', (req, res) => {
 	const id = req.params.id;
 	const users = getDatabase('users');
+	const user = users[id];
 
-	if (!users[id]) return res.status(404).json({ error: 'User not found' });
+	if (!user) return res.status(404).json({ error: 'User not found' });
 
-	users[id] = {
-		...users[id],
-		...req.body,
-	};
+	const { approved } = req.body;
+	if (approved === undefined) {
+		return res.status(400).json({ error: 'Approval status must be provided.' });
+	}
+
+	users[id].approved = approved;
 
 	setDatabase('users', users);
 	res.json({ id, ...users[id] });
