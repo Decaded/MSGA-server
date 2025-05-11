@@ -8,21 +8,17 @@ const PORT = 3001;
 
 // Initialize NyaDB
 const db = new NyaDB();
-/**
- * Initializes the required databases by checking if they exist
- * and creating them if they do not.
- *
- * The required databases are specified in the `requiredDatabases` array.
- * For each database name in the array, the function checks if it exists
- * in the database list. If a database does not exist, it is created.
- *
- * @function
- */
+const initializeDatabase = () => {
+	const requiredDatabases = ['users', 'works'];
+	requiredDatabases.forEach(dbName => {
+		if (!db.getList().includes(dbName)) db.create(dbName);
+	});
+};
 
 initializeDatabase();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json({ strict: false }));
 app.use(
 	session({
@@ -135,14 +131,19 @@ app.post('/works', (req, res) => {
 	res.json(newWork);
 });
 
-app.delete('/works/:id', (req, res) => {
-	const id = req.params.id;
+app.put('/works/:id', (req, res) => {
+	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
-	if (!works[id]) return res.status(404).json({ error: 'Work not found' });
+	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
 
-	delete works[id];
+	if (!workEntry) return res.status(404).json({ error: 'Work not found' });
+
+	const [dbKey, work] = workEntry;
+	Object.assign(work, req.body);
+	works[dbKey] = work;
+
 	setDatabase('works', works);
-	res.json({ success: true });
+	res.json(work);
 });
 
 app.put('/works/:id/status', (req, res) => {
