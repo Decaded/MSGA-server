@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 const NyaDB = require('@decaded/nyadb');
 
 const app = express();
@@ -39,7 +40,11 @@ app.post('/login', (req, res) => {
 	const user = Object.values(users).find(u => u.username === username);
 
 	if (!user) return res.status(404).json({ error: 'User not found' });
-	if (user.password !== password) return res.status(401).json({ error: 'Wrong password' });
+
+	if (!bcrypt.compareSync(password, user.password)) {
+		return res.status(401).json({ error: 'Wrong password' });
+	}
+
 	if (!user.approved) return res.status(403).json({ error: 'Account pending approval' });
 
 	req.session.user = { id: user.id, username: user.username, role: user.role };
@@ -66,10 +71,12 @@ app.post('/register', (req, res) => {
 
 	const newId = Object.keys(users).length.toString();
 
+	const hashedPassword = bcrypt.hashSync(password, 10);
+
 	users[newId] = {
 		username,
 		shProfileURL,
-		password,
+		password: hashedPassword,
 		role: 'user',
 		approved: false,
 	};
