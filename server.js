@@ -232,6 +232,24 @@ app.put('/works/:id/approve', (req, res) => {
 	res.json(works[id]);
 });
 
+app.delete('/works/:id', (req, res) => {
+	const id = parseInt(req.params.id);
+	const works = getDatabase('works');
+
+	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
+
+	if (!workEntry) {
+		return res.status(404).json({ error: 'Work not found' });
+	}
+
+	const [dbKey] = workEntry;
+
+	delete works[dbKey];
+	setDatabase('works', works);
+
+	res.json({ success: true, deletedId: id });
+});
+
 // Start server
 app.listen(PORT, () => {
 	console.log(`Mock backend running on http://localhost:${PORT}`);
