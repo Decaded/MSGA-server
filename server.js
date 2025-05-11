@@ -6,6 +6,7 @@ const NyaDB = require('@decaded/nyadb');
 
 const app = express();
 const PORT = 3001;
+const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'super_secret_jwt_key';
 
 // Initialize NyaDB
@@ -20,7 +21,21 @@ const initializeDatabase = () => {
 initializeDatabase();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = ['http://localhost:5173']; // List of allowed origins
+
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin || allowedOrigins.includes(origin)) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'), false);
+			}
+		},
+		credentials: false,
+	}),
+);
+
 app.use(express.json({ strict: false }));
 app.use(
 	session({
@@ -35,8 +50,9 @@ const getDatabase = dbName => db.get(dbName);
 const setDatabase = (dbName, data) => db.set(dbName, data);
 
 // JWT middleware to verify token
+
 const verifyToken = (req, res, next) => {
-	const token = req.headers['authorization']?.split(' ')[1];
+	const token = req.headers['authorization']?.split(' ')[1]; // Extract token from "Bearer <token>"
 
 	if (!token) return res.status(403).json({ error: 'No token provided' });
 
@@ -172,7 +188,7 @@ app.post('/works', (req, res) => {
 		title: req.body.title || `Reported Work ${nextId}`,
 		url: req.body.url,
 		status: 'pending_review',
-		reporter: req.session.user?.username || 'Anonymous',
+		reporter: req.user ? req.user.username : 'Anonymous', // Use the username from the JWT token if available
 		reason: req.body.reason || '',
 		proofs: req.body.proofs?.filter(p => p) || [],
 		additionalInfo: req.body.additionalInfo || '',
