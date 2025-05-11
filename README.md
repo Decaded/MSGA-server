@@ -68,7 +68,7 @@ The database creates two collections if they do not exist:
 {
   "username": "string",
   "password": "string",
-  "shProfileURL: "string"
+  "shProfileURL": "string"
 }
 ```
 
