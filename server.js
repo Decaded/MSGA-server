@@ -6,6 +6,7 @@ const NyaDB = require('@decaded/nyadb');
 
 const app = express();
 const PORT = 3001;
+const JWT_SECRET = 'super_secret_jwt_key';
 
 // Initialize NyaDB
 const db = new NyaDB();
@@ -33,6 +34,20 @@ app.use(
 const getDatabase = dbName => db.get(dbName);
 const setDatabase = (dbName, data) => db.set(dbName, data);
 
+// JWT middleware to verify token
+const verifyToken = (req, res, next) => {
+	const token = req.headers['authorization']?.split(' ')[1];
+
+	if (!token) return res.status(403).json({ error: 'No token provided' });
+
+	jwt.verify(token, JWT_SECRET, (err, decoded) => {
+		if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+
+		req.user = decoded;
+		next();
+	});
+};
+
 // Auth routes
 app.post('/login', (req, res) => {
 	const { username, password } = req.body;
@@ -47,8 +62,11 @@ app.post('/login', (req, res) => {
 
 	if (!user.approved) return res.status(403).json({ error: 'Account pending approval' });
 
-	req.session.user = { id: user.id, username: user.username, role: user.role };
-	res.json(req.session.user);
+	// req.session.user = { id: user.id, username: user.username, role: user.role };
+	// res.json(req.session.user);
+
+	const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+	res.json({ token });
 });
 
 app.post('/register', (req, res) => {
@@ -85,11 +103,11 @@ app.post('/register', (req, res) => {
 	res.status(201).json({ id: newId, ...users[newId] });
 });
 
-app.post('/logout', (req, res) => {
+app.post('/logout', verifyToken, (req, res) => {
 	req.session.destroy(() => res.json({ success: true }));
 });
 
-app.get('/check', (req, res) => {
+app.get('/check', verifyToken, (req, res) => {
 	res.json({
 		authenticated: !!req.session.user,
 		user: req.session.user || null,
@@ -97,7 +115,7 @@ app.get('/check', (req, res) => {
 });
 
 // User routes
-app.get('/users', (_, res) => {
+app.get('/users', verifyToken, (_, res) => {
 	const users = getDatabase('users');
 	const usersArray = Object.entries(users).map(([key, user]) => {
 		const { username, shProfileURL, role, approved } = user;
@@ -112,7 +130,7 @@ app.get('/users', (_, res) => {
 	res.json(usersArray);
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id', verifyToken, (req, res) => {
 	const id = req.params.id;
 	const users = getDatabase('users');
 	const user = users[id];
@@ -167,7 +185,7 @@ app.post('/works', (req, res) => {
 	res.status(201).json(newWork);
 });
 
-app.put('/works/:id', (req, res) => {
+app.put('/works/:id', verifyToken, (req, res) => {
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
@@ -182,7 +200,7 @@ app.put('/works/:id', (req, res) => {
 	res.json(work);
 });
 
-app.put('/works/:id/status', (req, res) => {
+app.put('/works/:id/status', verifyToken, (req, res) => {
 	console.log('1');
 	const id = req.params.id;
 	const { status } = req.body;
@@ -203,7 +221,7 @@ app.put('/works/:id/status', (req, res) => {
 	res.json(works[id]);
 });
 
-app.put('/works/:id', (req, res) => {
+app.put('/works/:id', verifyToken, (req, res) => {
 	console.log('2');
 	const id = req.params.id;
 	const works = getDatabase('works');
@@ -214,7 +232,7 @@ app.put('/works/:id', (req, res) => {
 	res.json(works[id]);
 });
 
-app.put('/works/:id/approve', (req, res) => {
+app.put('/works/:id/approve', verifyToken, (req, res) => {
 	console.log('3');
 	const id = req.params.id;
 	const works = getDatabase('works');
@@ -232,7 +250,7 @@ app.put('/works/:id/approve', (req, res) => {
 	res.json(works[id]);
 });
 
-app.delete('/works/:id', (req, res) => {
+app.delete('/works/:id', verifyToken, (req, res) => {
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 
