@@ -47,22 +47,28 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-	const { username, password } = req.body;
+	const { username, shProfileURL, password } = req.body;
 
-	if (!username || !password) {
-		return res.status(400).json({ error: 'Username and password are required' });
+	if (!username || !shProfileURL || !password) {
+		return res.status(400).json({ error: 'Username, SH profile URL and password are required' });
+	}
+
+	const shProfilePattern = /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/;
+	if (!shProfilePattern.test(shProfileURL)) {
+		return res.status(400).json({ error: 'Invalid SH profile URL format' });
 	}
 
 	const users = getDatabase('users');
-	const existingUser = Object.values(users).find(u => u.username === username);
+	const existingUser = Object.values(users).find(u => u.username === username || u.shProfileURL === shProfileURL);
 	if (existingUser) {
-		return res.status(409).json({ error: 'Username already exists' });
+		return res.status(409).json({ error: 'Username or SH profile URL already in use' });
 	}
 
 	const newId = Object.keys(users).length.toString();
 
 	users[newId] = {
 		username,
+		shProfileURL,
 		password,
 		role: 'user',
 		approved: false,
