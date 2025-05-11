@@ -137,20 +137,34 @@ app.get('/works', (_, res) => {
 
 app.post('/works', (req, res) => {
 	const works = getDatabase('works');
-	const existingIds = Object.keys(works).map(id => parseInt(id, 10));
+	const existingIds = Object.keys(works).map(Number);
 	const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+
+	if (!req.body.url) {
+		return res.status(400).json({ error: 'Work URL is required' });
+	}
+
+	const scribbleHubPattern = /^https:\/\/www\.scribblehub\.com\/series\/\d+/;
+	if (!scribbleHubPattern.test(req.body.url)) {
+		return res.status(400).json({ error: 'Invalid ScribbleHub URL format' });
+	}
 
 	const newWork = {
 		id: nextId,
-		...req.body,
+		title: req.body.title || `Reported Work ${nextId}`,
+		url: req.body.url,
 		status: 'pending_review',
+		reporter: req.session.user?.username || 'Anonymous',
+		reason: req.body.reason || '',
+		proofs: req.body.proofs?.filter(p => p) || [],
+		additionalInfo: req.body.additionalInfo || '',
 		dateReported: new Date().toISOString().split('T')[0],
 		approved: false,
 	};
 
-	works[newWork.id] = newWork;
+	works[nextId] = newWork;
 	setDatabase('works', works);
-	res.json(newWork);
+	res.status(201).json(newWork);
 });
 
 app.put('/works/:id', (req, res) => {
@@ -211,6 +225,7 @@ app.put('/works/:id/approve', (req, res) => {
 	}
 
 	works[id].approved = true;
+	works[id].status = 'in_progress';
 
 	setDatabase('works', works);
 
