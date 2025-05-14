@@ -125,8 +125,8 @@ app.post('/logout', verifyToken, (req, res) => {
 
 app.get('/check', verifyToken, (req, res) => {
 	res.json({
-		authenticated: !!req.session.user,
-		user: req.session.user || null,
+		authenticated: true,
+		user: req.user,
 	});
 });
 
