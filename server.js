@@ -82,7 +82,17 @@ app.post('/login', (req, res) => {
 	// res.json(req.session.user);
 
 	const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
-	res.json({ token });
+	res.json({
+		token,
+		id: user.id,
+		username: user.username,
+		role: user.role,
+		approved: user.approved,
+		shProfileURL: user.shProfileURL,
+	});
+
+	console.log('User logged in:', user.username);
+	console.log('Token generated:', token);
 });
 
 app.post('/register', (req, res) => {
