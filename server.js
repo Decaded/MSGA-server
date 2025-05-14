@@ -211,21 +211,6 @@ app.post('/works', (req, res) => {
 	res.status(201).json(newWork);
 });
 
-app.put('/works/:id', verifyToken, (req, res) => {
-	const id = parseInt(req.params.id);
-	const works = getDatabase('works');
-	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
-
-	if (!workEntry) return res.status(404).json({ error: 'Work not found' });
-
-	const [dbKey, work] = workEntry;
-	Object.assign(work, req.body);
-	works[dbKey] = work;
-
-	setDatabase('works', works);
-	res.json(work);
-});
-
 app.put('/works/:id/status', verifyToken, (req, res) => {
 	console.log('1');
 	const id = req.params.id;
@@ -243,17 +228,6 @@ app.put('/works/:id/status', verifyToken, (req, res) => {
 
 	works[id].status = status;
 
-	setDatabase('works', works);
-	res.json(works[id]);
-});
-
-app.put('/works/:id', verifyToken, (req, res) => {
-	console.log('2');
-	const id = req.params.id;
-	const works = getDatabase('works');
-	if (!works[id]) return res.status(404).json({ error: 'Work not found' });
-
-	Object.assign(works[id], req.body);
 	setDatabase('works', works);
 	res.json(works[id]);
 });
@@ -292,6 +266,21 @@ app.delete('/works/:id', verifyToken, (req, res) => {
 	setDatabase('works', works);
 
 	res.json({ success: true, deletedId: id });
+});
+
+app.put('/works/:id', verifyToken, (req, res) => {
+	const id = parseInt(req.params.id);
+	const works = getDatabase('works');
+	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
+
+	if (!workEntry) return res.status(404).json({ error: 'Work not found' });
+
+	const [dbKey, work] = workEntry;
+	Object.assign(work, req.body);
+	works[dbKey] = work;
+
+	setDatabase('works', works);
+	res.json(work);
 });
 
 // Start server
