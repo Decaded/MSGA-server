@@ -78,9 +78,6 @@ app.post('/login', (req, res) => {
 
 	if (!user.approved) return res.status(403).json({ error: 'Account pending approval' });
 
-	// req.session.user = { id: user.id, username: user.username, role: user.role };
-	// res.json(req.session.user);
-
 	const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
 	res.json({
 		token,
@@ -90,9 +87,6 @@ app.post('/login', (req, res) => {
 		approved: user.approved,
 		shProfileURL: user.shProfileURL,
 	});
-
-	console.log('User logged in:', user.username);
-	console.log('Token generated:', token);
 });
 
 app.post('/register', (req, res) => {
