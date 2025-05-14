@@ -2,18 +2,19 @@
 
 ## Overview
 
-This Express.js-based mock backend serves as a simplified server with authentication, user, and work management capabilities. It uses the in-memory `@decaded/nyadb` database and supports session management and CORS.
+This Express.js-based mock backend serves as a simplified server with authentication, user, and work management capabilities. It uses the in-memory `@decaded/nyadb` database and
+supports session management and CORS.
 
 ## Setup
 
 ### Prerequisites
 
-* Node.js (v12+ recommended)
+- Node.js (v12+ recommended)
 
 ### Installation
 
 ```bash
-npm install express express-session cors @decaded/nyadb
+npm install express express-session cors @decaded/nyadb bcryptjs jsonwebtoken body-parser
 ```
 
 ### Running the Server
@@ -26,16 +27,16 @@ The server will run at `http://localhost:3001`.
 
 ## Middleware
 
-* `cors`: Enables CORS for `http://localhost:3000`
-* `express.json`: Parses JSON payloads
-* `express-session`: Manages user sessions
+- `cors`: Enables CORS for `http://localhost:5173`
+- `express.json`: Parses JSON payloads
+- `express-session`: Manages user sessions
 
 ## Database Initialization
 
 The database creates two collections if they do not exist:
 
-* `users`
-* `works`
+- `users`
+- `works`
 
 ## Routes
 
@@ -47,17 +48,17 @@ The database creates two collections if they do not exist:
 
 ```json
 {
-  "username": "string",
-  "password": "string"
+	"username": "string",
+	"password": "string"
 }
 ```
 
 **Responses:**
 
-* `200`: Login successful, returns user session
-* `401`: Wrong password
-* `403`: Account pending approval
-* `404`: User not found
+- `200`: Login successful, returns JWT token
+- `401`: Wrong password
+- `403`: Account pending approval
+- `404`: User not found
 
 #### POST `/register`
 
@@ -66,15 +67,16 @@ The database creates two collections if they do not exist:
 ```json
 {
   "username": "string",
-  "password": "string"
+  "password": "string",
+  "shProfileURL": "string"
 }
 ```
 
 **Responses:**
 
-* `201`: User registered
-* `400`: Missing fields
-* `409`: Username exists
+- `201`: User registered
+- `400`: Missing fields
+- `409`: Username or SH profile URL already in use
 
 #### POST `/logout`
 
@@ -98,14 +100,14 @@ Returns all users as an array with numeric `id` fields.
 
 ```json
 {
-  // Any user field to update
+	// Any user field to update
 }
 ```
 
 **Responses:**
 
-* `200`: Updated user
-* `404`: User not found
+- `200`: Updated user
+- `404`: User not found
 
 ---
 
@@ -121,16 +123,21 @@ Returns all works as an object.
 
 ```json
 {
-  // Any fields relevant to a work
+	"title": "string",
+	"url": "string",
+	"reason": "string",
+	"proofs": ["string"],
+	"additionalInfo": "string"
 }
 ```
 
 Automatically adds:
 
-* `id`: Auto-incremented
-* `status`: `pending_review`
-* `dateReported`: Current date
-* `approved`: `false`
+- `id`: Auto-incremented
+- `status`: `pending_review`
+- `dateReported:` Current date
+- `approved`: `false`
+- `reporter`: `Anonymous` (if not logged in) or `username` (if logged in)
 
 **Response:** New work object
 
@@ -140,8 +147,8 @@ Deletes a work.
 
 **Response:**
 
-* `200`: Success
-* `404`: Work not found
+- `200`: Success
+- `404`: Work not found
 
 #### PUT `/works/:id/status`
 
@@ -149,7 +156,7 @@ Deletes a work.
 
 ```json
 {
-  "status": "string"
+	"status": "string"
 }
 ```
 
@@ -161,7 +168,7 @@ Updates the status of a work.
 
 ```json
 {
-  // Fields to update
+	// Fields to update
 }
 ```
 
@@ -173,8 +180,11 @@ Sets `approved` to `true` for a work.
 
 ---
 
-## Notes
+## Authentication Notes
 
-* User IDs and work IDs are stored as object keys (strings) but parsed to numbers in the API output.
-* Passwords are stored in plaintext (not secure, suitable only for mock/dev environments).
-* Sessions are stored in-memory.
+- JWT authentication is used for user login and sessions.
+
+- JWT tokens should be passed in the `Authorization` header in the format `Bearer <token>` for authenticated routes.
+
+- The `/works` route can be accessed by both authenticated and unauthenticated users. If authenticated, the logged-in user's username is used for the `reporter` field; otherwise,
+  the default is `Anonymous`.

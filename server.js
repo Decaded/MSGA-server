@@ -6,6 +6,8 @@ const NyaDB = require('@decaded/nyadb');
 
 const app = express();
 const PORT = 3001;
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'super_secret_jwt_key';
 
 // Initialize NyaDB
 const db = new NyaDB();
@@ -19,7 +21,21 @@ const initializeDatabase = () => {
 initializeDatabase();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = ['http://localhost:5173']; // List of allowed origins
+
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin || allowedOrigins.includes(origin)) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'), false);
+			}
+		},
+		credentials: false,
+	}),
+);
+
 app.use(express.json({ strict: false }));
 app.use(
 	session({
@@ -32,6 +48,21 @@ app.use(
 // Utility functions
 const getDatabase = dbName => db.get(dbName);
 const setDatabase = (dbName, data) => db.set(dbName, data);
+
+// JWT middleware to verify token
+
+const verifyToken = (req, res, next) => {
+	const token = req.headers['authorization']?.split(' ')[1]; // Extract token from "Bearer <token>"
+
+	if (!token) return res.status(403).json({ error: 'No token provided' });
+
+	jwt.verify(token, JWT_SECRET, (err, decoded) => {
+		if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+
+		req.user = decoded;
+		next();
+	});
+};
 
 // Auth routes
 app.post('/login', (req, res) => {
@@ -47,8 +78,15 @@ app.post('/login', (req, res) => {
 
 	if (!user.approved) return res.status(403).json({ error: 'Account pending approval' });
 
-	req.session.user = { id: user.id, username: user.username, role: user.role };
-	res.json(req.session.user);
+	const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+	res.json({
+		token,
+		id: user.id,
+		username: user.username,
+		role: user.role,
+		approved: user.approved,
+		shProfileURL: user.shProfileURL,
+	});
 });
 
 app.post('/register', (req, res) => {
@@ -85,19 +123,19 @@ app.post('/register', (req, res) => {
 	res.status(201).json({ id: newId, ...users[newId] });
 });
 
-app.post('/logout', (req, res) => {
+app.post('/logout', verifyToken, (req, res) => {
 	req.session.destroy(() => res.json({ success: true }));
 });
 
-app.get('/check', (req, res) => {
+app.get('/check', verifyToken, (req, res) => {
 	res.json({
-		authenticated: !!req.session.user,
-		user: req.session.user || null,
+		authenticated: true,
+		user: req.user,
 	});
 });
 
 // User routes
-app.get('/users', (_, res) => {
+app.get('/users', verifyToken, (_, res) => {
 	const users = getDatabase('users');
 	const usersArray = Object.entries(users).map(([key, user]) => {
 		const { username, shProfileURL, role, approved } = user;
@@ -112,7 +150,7 @@ app.get('/users', (_, res) => {
 	res.json(usersArray);
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id', verifyToken, (req, res) => {
 	const id = req.params.id;
 	const users = getDatabase('users');
 	const user = users[id];
@@ -154,7 +192,7 @@ app.post('/works', (req, res) => {
 		title: req.body.title || `Reported Work ${nextId}`,
 		url: req.body.url,
 		status: 'pending_review',
-		reporter: req.session.user?.username || 'Anonymous',
+		reporter: req.user ? req.user.username : 'Anonymous', // Use the username from the JWT token if available
 		reason: req.body.reason || '',
 		proofs: req.body.proofs?.filter(p => p) || [],
 		additionalInfo: req.body.additionalInfo || '',
@@ -167,22 +205,7 @@ app.post('/works', (req, res) => {
 	res.status(201).json(newWork);
 });
 
-app.put('/works/:id', (req, res) => {
-	const id = parseInt(req.params.id);
-	const works = getDatabase('works');
-	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
-
-	if (!workEntry) return res.status(404).json({ error: 'Work not found' });
-
-	const [dbKey, work] = workEntry;
-	Object.assign(work, req.body);
-	works[dbKey] = work;
-
-	setDatabase('works', works);
-	res.json(work);
-});
-
-app.put('/works/:id/status', (req, res) => {
+app.put('/works/:id/status', verifyToken, (req, res) => {
 	console.log('1');
 	const id = req.params.id;
 	const { status } = req.body;
@@ -203,18 +226,7 @@ app.put('/works/:id/status', (req, res) => {
 	res.json(works[id]);
 });
 
-app.put('/works/:id', (req, res) => {
-	console.log('2');
-	const id = req.params.id;
-	const works = getDatabase('works');
-	if (!works[id]) return res.status(404).json({ error: 'Work not found' });
-
-	Object.assign(works[id], req.body);
-	setDatabase('works', works);
-	res.json(works[id]);
-});
-
-app.put('/works/:id/approve', (req, res) => {
+app.put('/works/:id/approve', verifyToken, (req, res) => {
 	console.log('3');
 	const id = req.params.id;
 	const works = getDatabase('works');
@@ -232,7 +244,7 @@ app.put('/works/:id/approve', (req, res) => {
 	res.json(works[id]);
 });
 
-app.delete('/works/:id', (req, res) => {
+app.delete('/works/:id', verifyToken, (req, res) => {
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 
@@ -248,6 +260,21 @@ app.delete('/works/:id', (req, res) => {
 	setDatabase('works', works);
 
 	res.json({ success: true, deletedId: id });
+});
+
+app.put('/works/:id', verifyToken, (req, res) => {
+	const id = parseInt(req.params.id);
+	const works = getDatabase('works');
+	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
+
+	if (!workEntry) return res.status(404).json({ error: 'Work not found' });
+
+	const [dbKey, work] = workEntry;
+	Object.assign(work, req.body);
+	works[dbKey] = work;
+
+	setDatabase('works', works);
+	res.json(work);
 });
 
 // Start server
