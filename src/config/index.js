@@ -21,6 +21,8 @@
  * @property {string} errorMessages.userExists - Message for existing username or profile URL.
  * @property {string} errorMessages.workExists - Message for existing work URL.
  * @property {string} errorMessages.approvalRequired - Message for missing approval status.
+ * @property {string} errorMessages.onlyAdminsCanDelete - Message for unauthorized delete action.
+ * @property {string} errorMessages.adminCannotDeleteSelf - Message for admin self-deletion attempt.
  * @property {string} errorMessages.workUrlRequired - Message for missing work URL.
  * @property {string} errorMessages.invalidSHWorkUrl - Message for invalid ScribbleHub work URL.
  * @property {string} errorMessages.workNotFound - Message for work not found.
@@ -29,8 +31,8 @@
  * @property {string} errorMessages.corsError - Message for CORS error.
  *
  * @property {Object} regexPatterns - Regular expressions for validating URLs.
- * @property {RegExp} regexPatterns.shProfile - Regex for ScribbleHub profile URLs.
- * @property {RegExp} regexPatterns.shWorkUrl - Regex for ScribbleHub work URLs.
+ * @property {RegExp} regexPatterns.shProfileURLPattern - Regex for ScribbleHub profile URLs.
+ * @property {RegExp} regexPatterns.shWorkURLPattern - Regex for ScribbleHub work URLs.
  */
 
 require('dotenv').config();
@@ -43,6 +45,7 @@ module.exports = {
 		jwtExpiration: process.env.JWT_EXPIRATION || '1h',
 		sessionSecret: process.env.SESSION_SECRET,
 	},
+
 	errorMessages: {
 		userNotFound: 'User not found',
 		wrongPassword: 'Wrong password',
@@ -52,6 +55,8 @@ module.exports = {
 		userExists: 'Username or SH profile URL already in use',
 		workExists: 'This work has already been reported.',
 		approvalRequired: 'Approval status must be provided.',
+		onlyAdminsCanDelete: 'Only admins can delete users.',
+		adminCannotDeleteSelf: 'Admins cannot delete themselves.',
 		workUrlRequired: 'Work URL is required',
 		invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
 		workNotFound: 'Work not found',
@@ -61,7 +66,7 @@ module.exports = {
 	},
 
 	regexPatterns: {
-		shProfileURLPattern: new RegExp('^https://www\\.scribblehub\\.com/profile/\\d+/[a-zA-Z0-9-_]+/?$'),
-		shWorkURLPattern: new RegExp('^https://www\\.scribblehub\\.com/series/\\d+'),
+		shProfileURLPattern: /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
+		shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
 	},
 };
