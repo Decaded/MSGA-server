@@ -64,37 +64,43 @@ router.put('/:id', verifyToken, (req, res) => {
 /**
  * DELETE /:id
  * Deletes a user by ID.
- * Requires authentication via verifyToken middleware and admin role.
+ * Requires authentication via verifyToken middleware and admin privileges.
  *
  * @name DELETE /:id
  * @function
  * @memberof module:routes/users
  * @param {express.Request} req - Express request object.
  * @param {express.Response} res - Express response object.
- * @returns {Object} 200 - Success message with deleted user id and username.
- * @throws {403} Forbidden - If the user is not an admin.
+ * @returns {Object} 200 - Success message with deleted user ID and username.
  * @throws {404} Not Found - If the user does not exist.
+ * @throws {403} Forbidden - If the requester is not an admin.
+ * @throws {400} Bad Request - If an admin attempts to delete themselves.
  * @throws {401} Unauthorized - If token verification fails.
  */
 router.delete('/:id', verifyToken, (req, res) => {
-	if (req.user.role !== 'admin') {
-		return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
-	}
+	const userId = Number(req.params.id);
+	const users = getDatabase('users');
+
+	const userEntry = Object.entries(users).find(([key]) => Number(key) === userId);
+	if (!userEntry) return res.status(404).json({ error: errorMessages.userNotFound });
+
+	const [id, user] = userEntry;
 
 	if (req.user.id === userId) {
 		return res.status(400).json({ error: errorMessages.adminCannotDeleteSelf });
 	}
 
-	const userId = parseInt(req.params.id);
-	const users = getDatabase('users');
-	const userEntry = Object.entries(users).find(([_, user]) => user.id === userId);
+	if (user.role === 'admin') {
+		return res.status(403).json({ error: errorMessages.cannotDeleteOtherAdmins });
+	}
 
-	if (!userEntry) return res.status(404).json({ error: errorMessages.userNotFound });
+	if (req.user.role !== 'admin') {
+		return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
+	}
 
-	const [dbKey, user] = userEntry;
-	delete users[dbKey];
+	delete users[id];
 	setDatabase('users', users);
-	res.json({ success: true, deletedId: user.id, username: user.username });
+	res.json({ success: true, deletedId: userId, username: user.username });
 });
 
 module.exports = router;
