@@ -21,6 +21,7 @@
  *
  * @module routes/works
  */
+const logger = require('../utils/logger');
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
 const verifyToken = require('../middleware/verifyToken');
@@ -28,26 +29,38 @@ const { errorMessages, regexPatterns } = require('../config');
 
 const router = express.Router();
 
-router.get('/', (_, res) => {
-	console.log('Fetching all works');
+router.get('/', (req, res) => {
+	logger.info('Fetching all works');
 	res.json(getDatabase('works'));
 });
 
 router.post('/', (req, res) => {
+	logger.info('New work report submitted', {
+		url: req.body.url,
+		reporter: req.user ? req.user.username : 'Anonymous',
+	});
+
 	const works = getDatabase('works');
 	const existingIds = Object.keys(works).map(id => Number(id));
 	const nextIdNum = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
 	const nextId = nextIdNum.toString();
 
 	const submittedUrl = req.body.url?.trim();
-	if (!submittedUrl) return res.status(400).json({ error: errorMessages.missingURL });
+	if (!submittedUrl) {
+		logger.warn('Work submission failed - missing URL');
+		return res.status(400).json({ error: errorMessages.missingURL });
+	}
 
 	const pattern = regexPatterns.shWorkURLPattern;
-	if (!pattern.test(submittedUrl)) return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
-
+	if (!pattern.test(submittedUrl)) {
+		logger.warn('Work submission failed - invalid URL', { url: submittedUrl });
+		return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
+	}
 	const isDuplicate = Object.values(works).some(work => work.url.trim() === submittedUrl);
-	if (isDuplicate) return res.status(409).json({ error: errorMessages.workExists });
-
+	if (isDuplicate) {
+		logger.warn('Work submission failed - duplicate work', { url: submittedUrl });
+		return res.status(409).json({ error: errorMessages.workExists });
+	}
 	const newWork = {
 		id: nextIdNum,
 		title: req.body.title || `Reported Work ${nextId}`,
@@ -63,6 +76,13 @@ router.post('/', (req, res) => {
 
 	works[nextId] = newWork;
 	setDatabase('works', works);
+
+	logger.info('New work created successfully', {
+		workId: nextIdNum,
+		title: newWork.title,
+		reporter: newWork.reporter,
+	});
+
 	res.status(201).json(newWork);
 });
 
@@ -70,19 +90,44 @@ router.put('/:id/status', verifyToken, (req, res) => {
 	const { id } = req.params;
 	const { status } = req.body;
 	const works = getDatabase('works');
-	if (!works[id]) return res.status(404).json({ error: errorMessages.workNotFound });
+
+	if (!works[id]) {
+		logger.warn('Status update failed - work not found', { workId: id });
+		return res.status(404).json({ error: errorMessages.workNotFound });
+	}
+
 	works[id].status = status;
 	setDatabase('works', works);
+
+	logger.info('Work status updated', {
+		workId: id,
+		oldStatus,
+		newStatus: status,
+		updatedBy: req.user.username,
+	});
+
 	res.json(works[id]);
 });
 
 router.put('/:id/approve', verifyToken, (req, res) => {
 	const { id } = req.params;
 	const works = getDatabase('works');
-	if (!works[id]) return res.status(404).json({ error: errorMessages.workNotFound });
+
+	if (!works[id]) {
+		logger.warn('Approval failed - work not found', { workId: id });
+		return res.status(404).json({ error: errorMessages.workNotFound });
+	}
+
 	works[id].approved = true;
 	works[id].status = 'in_progress';
 	setDatabase('works', works);
+
+	logger.info('Work approved', {
+		workId: id,
+		title: works[id].title,
+		approvedBy: req.user.username,
+	});
+
 	res.json(works[id]);
 });
 
@@ -90,10 +135,21 @@ router.delete('/:id', verifyToken, (req, res) => {
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
-	if (!workEntry) return res.status(404).json({ error: errorMessages.workNotFound });
+
+	if (!workEntry) {
+		logger.warn('Delete failed - work not found', { workId: id });
+		return res.status(404).json({ error: errorMessages.workNotFound });
+	}
+
 	const [dbKey] = workEntry;
 	delete works[dbKey];
 	setDatabase('works', works);
+	logger.info('Work deleted', {
+		workId: id,
+		title: work.title,
+		deletedBy: req.user.username,
+	});
+
 	res.json({ success: true, deletedId: id });
 });
 
@@ -101,11 +157,39 @@ router.put('/:id', verifyToken, (req, res) => {
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
-	if (!workEntry) return res.status(404).json({ error: errorMessages.workNotFound });
+
+	if (!workEntry) {
+		logger.warn('Update failed - work not found', { workId: id });
+		return res.status(404).json({ error: errorMessages.workNotFound });
+	}
+
 	const [dbKey, work] = workEntry;
+	const changes = {};
+
+	// Log changes by comparing old and new values
+	Object.keys(req.body).forEach(key => {
+		if (work[key] !== req.body[key]) {
+			changes[key] = {
+				oldValue: work[key],
+				newValue: req.body[key],
+			};
+		}
+	});
+
 	Object.assign(work, req.body);
 	works[dbKey] = work;
 	setDatabase('works', works);
+
+	if (Object.keys(changes).length > 0) {
+		logger.info('Work updated', {
+			workId: id,
+			changes,
+			updatedBy: req.user.username,
+		});
+	} else {
+		logger.info('Work update request with no changes', { workId: id });
+	}
+	
 	res.json(work);
 });
 

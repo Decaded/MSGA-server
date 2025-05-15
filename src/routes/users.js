@@ -3,6 +3,7 @@
  *
  * @module routes/users
  */
+const logger = require('../utils/logger');
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
 const verifyToken = require('../middleware/verifyToken');
@@ -24,6 +25,7 @@ const router = express.Router();
  * @throws {401} Unauthorized - If token verification fails.
  */
 router.get('/', verifyToken, (_, res) => {
+	logger.info('Fetching all users', { requestingUser: req.user.id });
 	const users = getDatabase('users');
 	const result = Object.entries(users).map(([id, user]) => ({
 		id: parseInt(id),
@@ -51,6 +53,12 @@ router.get('/', verifyToken, (_, res) => {
  * @throws {401} Unauthorized - If token verification fails.
  */
 router.put('/:id', verifyToken, (req, res) => {
+	logger.info('Updating user approval status', {
+		userId: req.params.id,
+		approved: req.body.approved,
+		updatedBy: req.user.id,
+	});
+
 	const { id } = req.params;
 	const { approved } = req.body;
 	const users = getDatabase('users');
@@ -78,6 +86,11 @@ router.put('/:id', verifyToken, (req, res) => {
  * @throws {401} Unauthorized - If token verification fails.
  */
 router.delete('/:id', verifyToken, (req, res) => {
+	logger.info('Attempting to delete user', {
+		targetUserId: req.params.id,
+		requestingUser: req.user.id,
+	});
+
 	const userId = Number(req.params.id);
 	const users = getDatabase('users');
 
@@ -100,6 +113,12 @@ router.delete('/:id', verifyToken, (req, res) => {
 
 	delete users[id];
 	setDatabase('users', users);
+
+	logger.info('User deleted successfully', {
+		deletedUserId: userId,
+		deletedUsername: user.username,
+		deletedBy: req.user.id,
+	});
 	res.json({ success: true, deletedId: userId, username: user.username });
 });
 

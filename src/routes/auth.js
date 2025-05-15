@@ -3,7 +3,7 @@
  *
  * @module routes/auth
  */
-
+const logger = require('../utils/logger');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -27,11 +27,14 @@ const router = express.Router();
  */
 router.post('/login', (req, res) => {
 	const { username, password } = req.body;
+	logger.info('Login attempt', { username });
 	const users = getDatabase('users');
 	const userEntry = Object.entries(users).find(([_, u]) => u.username === username);
 
-	if (!userEntry) return res.status(404).json({ error: errorMessages.userNotFound });
-
+	if (!userEntry) {
+		logger.warn('Login failed - user not found', { username });
+		return res.status(404).json({ error: errorMessages.userNotFound });
+	}
 	const [userId, user] = userEntry;
 
 	if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: errorMessages.wrongPassword });
@@ -39,6 +42,7 @@ router.post('/login', (req, res) => {
 
 	const token = jwt.sign({ id: Number(userId), username: user.username, role: user.role }, env.jwtSecret, { expiresIn: env.jwtExpiration });
 
+	logger.info('Login successful', { userId, username: user.username });
 	res.json({
 		token,
 		id: Number(userId),
@@ -63,12 +67,16 @@ router.post('/login', (req, res) => {
  */
 router.post('/register', (req, res) => {
 	const { username, shProfileURL, password } = req.body;
+	logger.info('Registration attempt', { username, shProfileURL });
 	if (!username || !shProfileURL || !password) return res.status(400).json({ error: errorMessages.missingFields });
 	const pattern = regexPatterns.shProfileURLPattern;
 	if (!pattern.test(shProfileURL)) return res.status(400).json({ error: errorMessages.invalidScribbleHubURL });
 
 	const users = getDatabase('users');
-	if (Object.values(users).find(u => u.username === username || u.shProfileURL === shProfileURL)) return res.status(409).json({ error: errorMessages.userExists });
+	if (Object.values(users).find(u => u.username === username || u.shProfileURL === shProfileURL)) {
+		logger.warn('Registration failed - user exists', { username, shProfileURL });
+		return res.status(409).json({ error: errorMessages.userExists });
+	}
 
 	const existingIds = Object.keys(users).map(Number);
 	const newId = (existingIds.length ? Math.max(...existingIds) + 1 : 0).toString();
@@ -76,6 +84,8 @@ router.post('/register', (req, res) => {
 	const hashedPassword = bcrypt.hashSync(password, 10);
 	users[newId] = { username, shProfileURL, password: hashedPassword, role: 'user', approved: false };
 	setDatabase('users', users);
+
+	logger.info('User registered successfully', { newId, username });
 	res.status(201).json({ id: newId, ...users[newId] });
 });
 
@@ -88,6 +98,7 @@ router.post('/register', (req, res) => {
  * @returns {Object} 200 - Success message.
  */
 router.post('/logout', verifyToken, (req, res) => {
+	logger.info('User logging out', { userId: req.user.id, username: req.user.username });
 	req.session.destroy(() => res.json({ success: true }));
 });
 
