@@ -35,8 +35,9 @@ router.get('/', (_, res) => {
 
 router.post('/', (req, res) => {
 	const works = getDatabase('works');
-	const existingIds = Object.keys(works).map(Number);
-	const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+	const existingIds = Object.keys(works).map(id => Number(id));
+	const nextIdNum = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+	const nextId = nextIdNum.toString();
 
 	const submittedUrl = req.body.url?.trim();
 	if (!submittedUrl) return res.status(400).json({ error: errorMessages.missingURL });
@@ -48,7 +49,7 @@ router.post('/', (req, res) => {
 	if (isDuplicate) return res.status(409).json({ error: errorMessages.workExists });
 
 	const newWork = {
-		id: nextId,
+		id: nextIdNum,
 		title: req.body.title || `Reported Work ${nextId}`,
 		url: submittedUrl,
 		status: 'pending_review',
