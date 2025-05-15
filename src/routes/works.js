@@ -38,14 +38,19 @@ router.post('/', (req, res) => {
 	const existingIds = Object.keys(works).map(Number);
 	const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
 
-	if (!req.body.url) return res.status(400).json({ error: errorMessages.missingURL });
+	const submittedUrl = req.body.url?.trim();
+	if (!submittedUrl) return res.status(400).json({ error: errorMessages.missingURL });
+
 	const pattern = regexPatterns.shWorkURLPattern;
-	if (!pattern.test(req.body.url)) return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
+	if (!pattern.test(submittedUrl)) return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
+
+	const isDuplicate = Object.values(works).some(work => work.url.trim() === submittedUrl);
+	if (isDuplicate) return res.status(409).json({ error: errorMessages.workExists });
 
 	const newWork = {
 		id: nextId,
 		title: req.body.title || `Reported Work ${nextId}`,
-		url: req.body.url,
+		url: submittedUrl,
 		status: 'pending_review',
 		reporter: req.user ? req.user.username : 'Anonymous',
 		reason: req.body.reason || '',

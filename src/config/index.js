@@ -19,6 +19,7 @@
  * @property {string} errorMessages.missingFields - Message for missing required fields.
  * @property {string} errorMessages.invalidSHProfile - Message for invalid ScribbleHub profile URL.
  * @property {string} errorMessages.userExists - Message for existing username or profile URL.
+ * @property {string} errorMessages.workExists - Message for existing work URL.
  * @property {string} errorMessages.approvalRequired - Message for missing approval status.
  * @property {string} errorMessages.workUrlRequired - Message for missing work URL.
  * @property {string} errorMessages.invalidSHWorkUrl - Message for invalid ScribbleHub work URL.
@@ -49,6 +50,7 @@ module.exports = {
 		missingFields: 'Username, SH profile URL and password are required',
 		invalidSHProfile: 'Invalid SH profile URL format',
 		userExists: 'Username or SH profile URL already in use',
+		workExists: 'This work has already been reported.',
 		approvalRequired: 'Approval status must be provided.',
 		workUrlRequired: 'Work URL is required',
 		invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
