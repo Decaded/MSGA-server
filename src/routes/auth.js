@@ -26,7 +26,7 @@ const router = express.Router();
  * @returns {Object} 403 - If account is not approved.
  */
 router.post('/login', (req, res) => {
-	const { username, password } = req.body;
+	const { username, password } = res.body;
 	logger.info('Login attempt', { username });
 	const users = getDatabase('users');
 	const userEntry = Object.entries(users).find(([_, u]) => u.username === username);

@@ -25,8 +25,8 @@ const router = express.Router();
  * @throws {401} Unauthorized - If token verification fails.
  */
 router.get('/', verifyToken, (_, res) => {
-	logger.info('Fetching all users', { requestingUser: req.user.id });
 	const users = getDatabase('users');
+	logger.info('Fetching all users', { requestingUser: res.user });
 	const result = Object.entries(users).map(([id, user]) => ({
 		id: parseInt(id),
 		username: user.username,
