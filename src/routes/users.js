@@ -3,7 +3,6 @@
  *
  * @module routes/users
  */
-
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
 const verifyToken = require('../middleware/verifyToken');
@@ -60,6 +59,42 @@ router.put('/:id', verifyToken, (req, res) => {
 	users[id].approved = approved;
 	setDatabase('users', users);
 	res.json({ id, ...users[id] });
+});
+
+/**
+ * DELETE /:id
+ * Deletes a user by ID.
+ * Requires authentication via verifyToken middleware and admin role.
+ *
+ * @name DELETE /:id
+ * @function
+ * @memberof module:routes/users
+ * @param {express.Request} req - Express request object.
+ * @param {express.Response} res - Express response object.
+ * @returns {Object} 200 - Success message with deleted user id and username.
+ * @throws {403} Forbidden - If the user is not an admin.
+ * @throws {404} Not Found - If the user does not exist.
+ * @throws {401} Unauthorized - If token verification fails.
+ */
+router.delete('/:id', verifyToken, (req, res) => {
+	if (req.user.role !== 'admin') {
+		return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
+	}
+
+	if (req.user.id === userId) {
+		return res.status(400).json({ error: errorMessages.adminCannotDeleteSelf });
+	}
+
+	const userId = parseInt(req.params.id);
+	const users = getDatabase('users');
+	const userEntry = Object.entries(users).find(([_, user]) => user.id === userId);
+
+	if (!userEntry) return res.status(404).json({ error: errorMessages.userNotFound });
+
+	const [dbKey, user] = userEntry;
+	delete users[dbKey];
+	setDatabase('users', users);
+	res.json({ success: true, deletedId: user.id, username: user.username });
 });
 
 module.exports = router;
