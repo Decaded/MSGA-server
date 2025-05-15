@@ -35,8 +35,8 @@ app.use(
 	}),
 );
 
-app.use(authRoutes);
-app.use('/users', userRoutes);
-app.use('/works', workRoutes);
+app.use('/MSGA', authRoutes);
+app.use('/MSGA/users', userRoutes);
+app.use('/MSGA/works', workRoutes);
 
 app.listen(env.port, () => console.log(`Server running at http://localhost:${env.port}`));
