@@ -24,7 +24,11 @@ const router = express.Router();
  * @returns {Object[]} 200 - Array of user objects with id, username, shProfileURL, role, and approved status.
  * @throws {401} Unauthorized - If token verification fails.
  */
-router.get('/', verifyToken, (_, res) => {
+router.get('/', verifyToken, (req, res) => {
+	if (req.user.role !== 'admin') {
+		return res.status(403).json({ error: errorMessages.onlyAdminsCanAccess });
+	}
+
 	const users = getDatabase('users');
 	logger.info('Fetching all users', { requestingUser: res.user });
 	const result = Object.entries(users).map(([id, user]) => ({
@@ -58,6 +62,10 @@ router.put('/:id', verifyToken, (req, res) => {
 		approved: req.body.approved,
 		updatedBy: req.user.id,
 	});
+
+	if (req.user.role !== 'admin') {
+		return res.status(403).json({ error: errorMessages.onlyAdminsCanUpdateUsers });
+	}
 
 	const { id } = req.params;
 	const { approved } = req.body;

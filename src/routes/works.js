@@ -31,7 +31,9 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
 	logger.info('Fetching all works');
-	res.json(getDatabase('works'));
+	const works = getDatabase('works');
+	const filteredWorks = Object.values(works).filter(work => work.approved);
+	res.json(filteredWorks);
 });
 
 router.post('/', (req, res) => {
@@ -90,11 +92,19 @@ router.put('/:id/status', verifyToken, (req, res) => {
 	const { id } = req.params;
 	const { status } = req.body;
 	const works = getDatabase('works');
+	const work = works[id];
 
-	if (!works[id]) {
+	const validStatuses = ['pending_review', 'in_progress', 'confirmed', 'taken_down', 'original'];
+	if (!validStatuses.includes(status)) {
+		return res.status(400).json({ error: errorMessages.invalidStatus });
+	}
+
+	if (!works[id] || !work) {
 		logger.warn('Status update failed - work not found', { workId: id });
 		return res.status(404).json({ error: errorMessages.workNotFound });
 	}
+
+	const oldStatus = work.status;
 
 	works[id].status = status;
 	setDatabase('works', works);
@@ -132,6 +142,9 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 });
 
 router.delete('/:id', verifyToken, (req, res) => {
+	if (req.user.role !== 'admin') {
+		return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
+	}
 	const id = parseInt(req.params.id);
 	const works = getDatabase('works');
 	const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
@@ -141,7 +154,7 @@ router.delete('/:id', verifyToken, (req, res) => {
 		return res.status(404).json({ error: errorMessages.workNotFound });
 	}
 
-	const [dbKey] = workEntry;
+	const [dbKey, work] = workEntry;
 	delete works[dbKey];
 	setDatabase('works', works);
 	logger.info('Work deleted', {
@@ -161,6 +174,14 @@ router.put('/:id', verifyToken, (req, res) => {
 	if (!workEntry) {
 		logger.warn('Update failed - work not found', { workId: id });
 		return res.status(404).json({ error: errorMessages.workNotFound });
+	}
+
+	if (req.user.role !== 'admin') {
+		const protectedFields = ['approved', 'status'];
+		const isEditingProtectedField = Object.keys(req.body).some(key => protectedFields.includes(key));
+		if (isEditingProtectedField) {
+			return res.status(403).json({ error: errorMessages.unauthorizedFieldUpdate });
+		}
 	}
 
 	const [dbKey, work] = workEntry;
@@ -189,7 +210,7 @@ router.put('/:id', verifyToken, (req, res) => {
 	} else {
 		logger.info('Work update request with no changes', { workId: id });
 	}
-	
+
 	res.json(work);
 });
 

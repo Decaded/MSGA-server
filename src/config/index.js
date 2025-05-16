@@ -21,6 +21,9 @@
  * @property {string} errorMessages.userExists - Message for existing username or profile URL.
  * @property {string} errorMessages.workExists - Message for existing work URL.
  * @property {string} errorMessages.approvalRequired - Message for missing approval status.
+ * @property {string} errorMessages.unauthorizedFieldUpdate - Message for unauthorized field update.
+ * @property {string} errorMessages.onlyAdminsCanAccess - Message for unauthorized access.
+ * @property {string} errorMessages.onlyAdminsCanUpdateUsers - Message for unauthorized user update.
  * @property {string} errorMessages.onlyAdminsCanDelete - Message for unauthorized delete action.
  * @property {string} errorMessages.adminCannotDeleteSelf - Message for admin self-deletion attempt.
  * @property {string} errorMessages.workUrlRequired - Message for missing work URL.
@@ -55,7 +58,10 @@ module.exports = {
 		userExists: 'Username or SH profile URL already in use',
 		workExists: 'This work has already been reported.',
 		approvalRequired: 'Approval status must be provided.',
-		onlyAdminsCanDelete: 'Only admins can delete users.',
+		unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
+		onlyAdminsCanAccess: 'You are not authorized to access this resource.',
+		onlyAdminsCanUpdateUsers: 'You are not authorized to update this user.',
+		onlyAdminsCanDelete: 'You are not authorized to delete this entry.',
 		adminCannotDeleteSelf: 'Admins cannot delete themselves.',
 		workUrlRequired: 'Work URL is required',
 		invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
