@@ -70,7 +70,7 @@ router.post('/register', (req, res) => {
 	logger.info('Registration attempt', { username, shProfileURL });
 	if (!username || !shProfileURL || !password) return res.status(400).json({ error: errorMessages.missingFields });
 	const pattern = regexPatterns.shProfileURLPattern;
-	if (!pattern.test(shProfileURL)) return res.status(400).json({ error: errorMessages.invalidScribbleHubURL });
+	if (!pattern.test(shProfileURL)) return res.status(400).json({ error: errorMessages.invalidSHProfile });
 
 	const users = getDatabase('users');
 	if (Object.values(users).find(u => u.username === username || u.shProfileURL === shProfileURL)) {

@@ -10,7 +10,6 @@
  * @property {string[]} env.allowedOrigins - List of allowed CORS origins.
  * @property {string} env.jwtSecret - Secret key for JWT signing.
  * @property {string} env.jwtExpiration - JWT expiration time (e.g., '1h').
- * @property {string} env.sessionSecret - Secret key for session management.
  *
  * @property {Object} errorMessages - Predefined error messages used throughout the application.
  * @property {string} errorMessages.userNotFound - Message for user not found.
@@ -20,14 +19,17 @@
  * @property {string} errorMessages.invalidSHProfile - Message for invalid ScribbleHub profile URL.
  * @property {string} errorMessages.userExists - Message for existing username or profile URL.
  * @property {string} errorMessages.workExists - Message for existing work URL.
+ * @property {string} errorMessages.invalidStatus - Message for invalid status value.
  * @property {string} errorMessages.approvalRequired - Message for missing approval status.
  * @property {string} errorMessages.unauthorizedFieldUpdate - Message for unauthorized field update.
  * @property {string} errorMessages.onlyAdminsCanAccess - Message for unauthorized access.
  * @property {string} errorMessages.onlyAdminsCanUpdateUsers - Message for unauthorized user update.
  * @property {string} errorMessages.onlyAdminsCanDelete - Message for unauthorized delete action.
+ * @property {string} errorMessages.cannotDeleteOtherAdmins - Message for admin deletion attempt.
  * @property {string} errorMessages.adminCannotDeleteSelf - Message for admin self-deletion attempt.
  * @property {string} errorMessages.workUrlRequired - Message for missing work URL.
  * @property {string} errorMessages.invalidSHWorkUrl - Message for invalid ScribbleHub work URL.
+ * @property {string} errorMessages.invalidTokenFormat - Message for malformed authorization header.
  * @property {string} errorMessages.workNotFound - Message for work not found.
  * @property {string} errorMessages.noToken - Message for missing authentication token.
  * @property {string} errorMessages.invalidToken - Message for invalid or expired token.
@@ -46,7 +48,6 @@ module.exports = {
 		allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
 		jwtSecret: process.env.JWT_SECRET,
 		jwtExpiration: process.env.JWT_EXPIRATION || '1h',
-		sessionSecret: process.env.SESSION_SECRET,
 	},
 
 	errorMessages: {
@@ -57,17 +58,20 @@ module.exports = {
 		invalidSHProfile: 'Invalid SH profile URL format',
 		userExists: 'Username or SH profile URL already in use',
 		workExists: 'This work has already been reported.',
+		invalidStatus: 'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
 		approvalRequired: 'Approval status must be provided.',
 		unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
 		onlyAdminsCanAccess: 'You are not authorized to access this resource.',
 		onlyAdminsCanUpdateUsers: 'You are not authorized to update this user.',
 		onlyAdminsCanDelete: 'You are not authorized to delete this entry.',
+		cannotDeleteOtherAdmins: 'You cannot delete other admins.',
 		adminCannotDeleteSelf: 'Admins cannot delete themselves.',
 		workUrlRequired: 'Work URL is required',
 		invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
 		workNotFound: 'Work not found',
 		noToken: 'No token provided',
 		invalidToken: 'Invalid or expired token',
+		invalidTokenFormat: 'Malformed authorization header',
 		corsError: 'Not allowed by CORS',
 	},
 

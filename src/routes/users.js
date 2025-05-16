@@ -30,7 +30,7 @@ router.get('/', verifyToken, (req, res) => {
 	}
 
 	const users = getDatabase('users');
-	logger.info('Fetching all users', { requestingUser: res.user });
+	logger.info('Fetching all users', { requestingUser: req.user });
 	const result = Object.entries(users).map(([id, user]) => ({
 		id: parseInt(id),
 		username: user.username,

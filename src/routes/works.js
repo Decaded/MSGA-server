@@ -49,7 +49,7 @@ router.post('/', (req, res) => {
 	const submittedUrl = req.body.url?.trim();
 	if (!submittedUrl) {
 		logger.warn('Work submission failed - missing URL');
-		return res.status(400).json({ error: errorMessages.missingURL });
+		return res.status(400).json({ error: errorMessages.workUrlRequired });
 	}
 
 	const pattern = regexPatterns.shWorkURLPattern;
