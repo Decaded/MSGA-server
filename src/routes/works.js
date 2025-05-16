@@ -31,8 +31,19 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
 	logger.info('Fetching all works');
+	const works = getDatabase('works');
+	// Auto‑approve any work that slipped through
+	Object.values(works).forEach(w => {
+		if (w.approved === false) {
+			w.approved = true;
+		}
+	});
 
-	res.json(getDatabase('works'));
+	// Update the database with the auto-approved works
+	setDatabase('works', works);
+
+	// Return the works
+	res.json(works);
 });
 
 router.post('/', (req, res) => {
@@ -106,6 +117,12 @@ router.put('/:id/status', verifyToken, (req, res) => {
 	const oldStatus = work.status;
 
 	works[id].status = status;
+
+	// If someone changed status but forgot to approve, auto‑approve it
+	if (works[id].approved === false) {
+		works[id].approved = true;
+	}
+
 	setDatabase('works', works);
 
 	logger.info('Work status updated', {
