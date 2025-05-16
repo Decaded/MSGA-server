@@ -5,7 +5,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "express-session": "^1.18.1",
+    "express-rate-limit": "^7.5.0",
     "jsonwebtoken": "^9.0.2",
     "winston": "^3.17.0"
   },
@@ -17,5 +17,21 @@
   "main": "server.js",
   "author": "Decaded",
   "license": "MIT",
-  "description": ""
+  "description": "This Express.js-based mock backend serves as a simplified server with authentication, user, and work management capabilities. It uses the in-memory `@decaded/nyadb` database and\r supports session management and CORS.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Decaded/MSGA-server.git"
+  },
+  "keywords": [
+    "scribble",
+    "hub",
+    "report",
+    "story",
+    "sh",
+    "backend"
+  ],
+  "bugs": {
+    "url": "https://github.com/Decaded/MSGA-server/issues"
+  },
+  "homepage": "https://github.com/Decaded/MSGA-server#readme"
 }
