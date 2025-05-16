@@ -31,9 +31,8 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
 	logger.info('Fetching all works');
-	const works = getDatabase('works');
-	const filteredWorks = Object.values(works).filter(work => work.approved);
-	res.json(filteredWorks);
+
+	res.json(getDatabase('works'));
 });
 
 router.post('/', (req, res) => {
