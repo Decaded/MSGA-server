@@ -16,7 +16,7 @@ const { env, errorMessages } = require('../config');
 module.exports = function verifyToken(req, res, next) {
   const auth = req.headers['authorization'];
   if (!auth) {
-    return res.status(403).json({ error: errorMessages.noToken });
+    return res.status(401).json({ error: errorMessages.noToken });
   }
 
   const parts = auth.split(' ');
@@ -25,7 +25,7 @@ module.exports = function verifyToken(req, res, next) {
   }
 
   const token = parts[1];
-  jwt.verify(token, env.jwtSecret, (err, decoded) => {
+  jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] }, (err, decoded) =>  {
     if (err) return res.status(403).json({ error: errorMessages.invalidToken });
     req.user = decoded;
     next();
