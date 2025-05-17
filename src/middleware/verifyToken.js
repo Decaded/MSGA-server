@@ -25,9 +25,21 @@ module.exports = function verifyToken(req, res, next) {
   }
 
   const token = parts[1];
-  jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] }, (err, decoded) =>  {
-    if (err) return res.status(403).json({ error: errorMessages.invalidToken });
-    req.user = decoded;
-    next();
-  });
+  jwt.verify(
+    token,
+    env.jwtSecret,
+    { algorithms: ['HS256'] },
+    (err, decoded) => {
+      if (err)
+        return res.status(403).json({ error: errorMessages.invalidToken });
+
+      const blockedTokens = getDatabase('blockedTokens');
+      if (blockedTokens[decoded.jti]) {
+        return res.status(403).json({ error: errorMessages.tokenRevoked });
+      }
+
+      req.user = decoded;
+      next();
+    }
+  );
 };

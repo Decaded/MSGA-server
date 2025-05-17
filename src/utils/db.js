@@ -6,7 +6,7 @@ const db = new NyaDB();
  * Required collections: 'users', 'works'.
  */
 const initDB = () => {
-  const required = ['users', 'works'];
+  const required = ['users', 'works', 'blockedTokens'];
   required.forEach(name => {
     if (!db.getList().includes(name)) db.create(name);
   });

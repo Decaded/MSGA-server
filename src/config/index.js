@@ -46,10 +46,10 @@ module.exports = {
   env: {
     port: process.env.PORT || 3000,
     allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:5173',
+      'http://localhost:5173'
     ],
     jwtSecret: process.env.JWT_SECRET,
-    jwtExpiration: process.env.JWT_EXPIRATION || '1h',
+    jwtExpiration: process.env.JWT_EXPIRATION || '1h'
   },
 
   errorMessages: {
@@ -75,12 +75,13 @@ module.exports = {
     noToken: 'No token provided',
     invalidToken: 'Invalid or expired token',
     invalidTokenFormat: 'Malformed authorization header',
-    corsError: 'Not allowed by CORS',
+    tokenRevoked: 'Token has been revoked',
+    corsError: 'Not allowed by CORS'
   },
 
   regexPatterns: {
     shProfileURLPattern:
       /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
-    shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
-  },
+    shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/
+  }
 };
