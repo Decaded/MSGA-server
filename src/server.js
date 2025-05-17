@@ -28,6 +28,8 @@ const workRoutes = require('./routes/works');
 
 const app = express();
 
+app.set('trust proxy', true);
+
 // Log database initialization
 try {
   initDB();
