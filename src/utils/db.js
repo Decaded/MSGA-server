@@ -6,10 +6,10 @@ const db = new NyaDB();
  * Required collections: 'users', 'works'.
  */
 const initDB = () => {
-	const required = ['users', 'works'];
-	required.forEach(name => {
-		if (!db.getList().includes(name)) db.create(name);
-	});
+  const required = ['users', 'works'];
+  required.forEach(name => {
+    if (!db.getList().includes(name)) db.create(name);
+  });
 };
 
 /**

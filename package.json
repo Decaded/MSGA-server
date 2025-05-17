@@ -9,8 +9,16 @@
     "jsonwebtoken": "^9.0.2",
     "winston": "^3.17.0"
   },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "eslint": "^9.27.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-node": "^11.1.0"
+  },
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "name": "msga-server",
   "version": "1.0.0",

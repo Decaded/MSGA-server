@@ -1,5 +1,9 @@
 {
-  "cSpell.words": [
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+    "cSpell.words": [
     "MSGA",
     "scribblehub"
   ]

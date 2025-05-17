@@ -12,9 +12,9 @@
 const { env, errorMessages } = require('../config');
 
 module.exports = {
-	origin: (origin, callback) => {
-		if (!origin || env.allowedOrigins.includes(origin)) callback(null, true);
-		else callback(new Error(errorMessages.corsError));
-	},
-	credentials: false,
+  origin: (origin, callback) => {
+    if (!origin || env.allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error(errorMessages.corsError));
+  },
+  credentials: false
 };

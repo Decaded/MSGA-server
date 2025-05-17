@@ -43,40 +43,44 @@
 require('dotenv').config();
 
 module.exports = {
-	env: {
-		port: process.env.PORT || 3000,
-		allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
-		jwtSecret: process.env.JWT_SECRET,
-		jwtExpiration: process.env.JWT_EXPIRATION || '1h',
-	},
+  env: {
+    port: process.env.PORT || 3000,
+    allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:5173',
+    ],
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpiration: process.env.JWT_EXPIRATION || '1h',
+  },
 
-	errorMessages: {
-		userNotFound: 'User not found',
-		wrongPassword: 'Wrong password',
-		accountNotApproved: 'Account pending approval',
-		missingFields: 'Username, SH profile URL and password are required',
-		invalidSHProfile: 'Invalid SH profile URL format',
-		userExists: 'Username or SH profile URL already in use',
-		workExists: 'This work has already been reported.',
-		invalidStatus: 'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
-		approvalRequired: 'Approval status must be provided.',
-		unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
-		onlyAdminsCanAccess: 'You are not authorized to access this resource.',
-		onlyAdminsCanUpdateUsers: 'You are not authorized to update this user.',
-		onlyAdminsCanDelete: 'You are not authorized to delete this entry.',
-		cannotDeleteOtherAdmins: 'You cannot delete other admins.',
-		adminCannotDeleteSelf: 'Admins cannot delete themselves.',
-		workUrlRequired: 'Work URL is required',
-		invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
-		workNotFound: 'Work not found',
-		noToken: 'No token provided',
-		invalidToken: 'Invalid or expired token',
-		invalidTokenFormat: 'Malformed authorization header',
-		corsError: 'Not allowed by CORS',
-	},
+  errorMessages: {
+    userNotFound: 'User not found',
+    wrongPassword: 'Wrong password',
+    accountNotApproved: 'Account pending approval',
+    missingFields: 'Username, SH profile URL and password are required',
+    invalidSHProfile: 'Invalid SH profile URL format',
+    userExists: 'Username or SH profile URL already in use',
+    workExists: 'This work has already been reported.',
+    invalidStatus:
+      'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
+    approvalRequired: 'Approval status must be provided.',
+    unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
+    onlyAdminsCanAccess: 'You are not authorized to access this resource.',
+    onlyAdminsCanUpdateUsers: 'You are not authorized to update this user.',
+    onlyAdminsCanDelete: 'You are not authorized to delete this entry.',
+    cannotDeleteOtherAdmins: 'You cannot delete other admins.',
+    adminCannotDeleteSelf: 'Admins cannot delete themselves.',
+    workUrlRequired: 'Work URL is required',
+    invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
+    workNotFound: 'Work not found',
+    noToken: 'No token provided',
+    invalidToken: 'Invalid or expired token',
+    invalidTokenFormat: 'Malformed authorization header',
+    corsError: 'Not allowed by CORS',
+  },
 
-	regexPatterns: {
-		shProfileURLPattern: /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
-		shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
-	},
+  regexPatterns: {
+    shProfileURLPattern:
+      /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
+    shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
+  },
 };
