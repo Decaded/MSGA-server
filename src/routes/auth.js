@@ -99,7 +99,8 @@ router.post('/register', (req, res) => {
  */
 router.post('/logout', verifyToken, (req, res) => {
   logger.info('User logging out', { userId: req.user.id, username: req.user.username });
-  req.session.destroy(() => res.json({ success: true }));
+  res.json({ success: true });
 });
+
 
 module.exports = router;
