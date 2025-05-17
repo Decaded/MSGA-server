@@ -4,7 +4,8 @@
     "source.fixAll.eslint": "always"
   },
     "cSpell.words": [
-    "MSGA",
-    "scribblehub"
-  ]
+      "MSGA",
+      "scribblehub",
+      "uuidv"
+    ]
 }
