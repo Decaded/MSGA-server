@@ -33,6 +33,7 @@
  * @property {string} errorMessages.workNotFound - Message for work not found.
  * @property {string} errorMessages.noToken - Message for missing authentication token.
  * @property {string} errorMessages.invalidToken - Message for invalid or expired token.
+ * @property {string} errorMessages.tokenRevoked - Message for revoked token.
  * @property {string} errorMessages.corsError - Message for CORS error.
  *
  * @property {Object} regexPatterns - Regular expressions for validating URLs.
@@ -53,12 +54,12 @@ module.exports = {
   },
 
   errorMessages: {
-    userNotFound: 'User not found',
-    wrongPassword: 'Wrong password',
-    accountNotApproved: 'Account pending approval',
-    missingFields: 'Username, SH profile URL and password are required',
-    invalidSHProfile: 'Invalid SH profile URL format',
-    userExists: 'Username or SH profile URL already in use',
+    userNotFound: 'User not found. Please check your username.',
+    wrongPassword: 'Wrong password. Please try again.',
+    accountNotApproved: 'Account pending approval.',
+    missingFields: 'Username, SH profile URL and password are required.',
+    invalidSHProfile: 'Invalid SH profile URL format.',
+    userExists: 'Username or SH profile URL already in use.',
     workExists: 'This work has already been reported.',
     invalidStatus:
       'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
@@ -69,14 +70,14 @@ module.exports = {
     onlyAdminsCanDelete: 'You are not authorized to delete this entry.',
     cannotDeleteOtherAdmins: 'You cannot delete other admins.',
     adminCannotDeleteSelf: 'Admins cannot delete themselves.',
-    workUrlRequired: 'Work URL is required',
-    invalidSHWorkUrl: 'Invalid ScribbleHub URL format',
-    workNotFound: 'Work not found',
-    noToken: 'No token provided',
-    invalidToken: 'Invalid or expired token',
-    invalidTokenFormat: 'Malformed authorization header',
-    tokenRevoked: 'Token has been revoked',
-    corsError: 'Not allowed by CORS'
+    workUrlRequired: 'Work URL is required.',
+    invalidSHWorkUrl: 'Invalid ScribbleHub URL format.',
+    workNotFound: 'Work not found. Please check the ID and try again.',
+    noToken: 'No token provided. Please log in.',
+    invalidToken: 'Invalid or expired token. Please log in again.',
+    invalidTokenFormat: 'Malformed authorization header. Please log in again.',
+    tokenRevoked: 'Token has been revoked. Please log in again.',
+    corsError: 'Not allowed by CORS.'
   },
 
   regexPatterns: {
