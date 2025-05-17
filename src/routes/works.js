@@ -49,7 +49,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   logger.info('New work report submitted', {
     url: req.body.url,
-    reporter: req.user ? req.user.username : 'Anonymous',
+    reporter: req.user ? req.user.username : 'Anonymous'
   });
 
   const works = getDatabase('works');
@@ -68,9 +68,13 @@ router.post('/', (req, res) => {
     logger.warn('Work submission failed - invalid URL', { url: submittedUrl });
     return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
   }
-  const isDuplicate = Object.values(works).some(work => work.url.trim() === submittedUrl);
+  const isDuplicate = Object.values(works).some(
+    work => work.url.trim() === submittedUrl
+  );
   if (isDuplicate) {
-    logger.warn('Work submission failed - duplicate work', { url: submittedUrl });
+    logger.warn('Work submission failed - duplicate work', {
+      url: submittedUrl
+    });
     return res.status(409).json({ error: errorMessages.workExists });
   }
   const newWork = {
@@ -83,7 +87,7 @@ router.post('/', (req, res) => {
     proofs: req.body.proofs?.filter(p => p) || [],
     additionalInfo: req.body.additionalInfo || '',
     dateReported: new Date().toISOString().split('T')[0],
-    approved: false,
+    approved: false
   };
 
   works[nextId] = newWork;
@@ -92,7 +96,7 @@ router.post('/', (req, res) => {
   logger.info('New work created successfully', {
     workId: nextIdNum,
     title: newWork.title,
-    reporter: newWork.reporter,
+    reporter: newWork.reporter
   });
 
   res.status(201).json(newWork);
@@ -104,7 +108,13 @@ router.put('/:id/status', verifyToken, (req, res) => {
   const works = getDatabase('works');
   const work = works[id];
 
-  const validStatuses = ['pending_review', 'in_progress', 'confirmed', 'taken_down', 'original'];
+  const validStatuses = [
+    'pending_review',
+    'in_progress',
+    'confirmed',
+    'taken_down',
+    'original'
+  ];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: errorMessages.invalidStatus });
   }
@@ -129,7 +139,7 @@ router.put('/:id/status', verifyToken, (req, res) => {
     workId: id,
     oldStatus,
     newStatus: status,
-    updatedBy: req.user.username,
+    updatedBy: req.user.username
   });
 
   res.json(works[id]);
@@ -151,7 +161,7 @@ router.put('/:id/approve', verifyToken, (req, res) => {
   logger.info('Work approved', {
     workId: id,
     title: works[id].title,
-    approvedBy: req.user.username,
+    approvedBy: req.user.username
   });
 
   res.json(works[id]);
@@ -176,7 +186,7 @@ router.delete('/:id', verifyToken, (req, res) => {
   logger.info('Work deleted', {
     workId: id,
     title: work.title,
-    deletedBy: req.user.username,
+    deletedBy: req.user.username
   });
 
   res.json({ success: true, deletedId: id });
@@ -194,9 +204,13 @@ router.put('/:id', verifyToken, (req, res) => {
 
   if (req.user.role !== 'admin') {
     const protectedFields = ['approved', 'status'];
-    const isEditingProtectedField = Object.keys(req.body).some(key => protectedFields.includes(key));
+    const isEditingProtectedField = Object.keys(req.body).some(key =>
+      protectedFields.includes(key)
+    );
     if (isEditingProtectedField) {
-      return res.status(403).json({ error: errorMessages.unauthorizedFieldUpdate });
+      return res
+        .status(403)
+        .json({ error: errorMessages.unauthorizedFieldUpdate });
     }
   }
 
@@ -208,7 +222,7 @@ router.put('/:id', verifyToken, (req, res) => {
     if (work[key] !== req.body[key]) {
       changes[key] = {
         oldValue: work[key],
-        newValue: req.body[key],
+        newValue: req.body[key]
       };
     }
   });
@@ -221,7 +235,7 @@ router.put('/:id', verifyToken, (req, res) => {
     logger.info('Work updated', {
       workId: id,
       changes,
-      updatedBy: req.user.username,
+      updatedBy: req.user.username
     });
   } else {
     logger.info('Work update request with no changes', { workId: id });

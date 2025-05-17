@@ -36,7 +36,7 @@ router.get('/', verifyToken, (req, res) => {
     username: user.username,
     shProfileURL: user.shProfileURL,
     role: user.role,
-    approved: user.approved,
+    approved: user.approved
   }));
   res.json(result);
 });
@@ -60,18 +60,22 @@ router.put('/:id', verifyToken, (req, res) => {
   logger.info('Updating user approval status', {
     userId: req.params.id,
     approved: req.body.approved,
-    updatedBy: req.user.id,
+    updatedBy: req.user.id
   });
 
   if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: errorMessages.onlyAdminsCanUpdateUsers });
+    return res
+      .status(403)
+      .json({ error: errorMessages.onlyAdminsCanUpdateUsers });
   }
 
   const { id } = req.params;
   const { approved } = req.body;
   const users = getDatabase('users');
-  if (!users[id]) return res.status(404).json({ error: errorMessages.userNotFound });
-  if (approved === undefined) return res.status(400).json({ error: errorMessages.approvalRequired });
+  if (!users[id])
+    return res.status(404).json({ error: errorMessages.userNotFound });
+  if (approved === undefined)
+    return res.status(400).json({ error: errorMessages.approvalRequired });
   users[id].approved = approved;
   setDatabase('users', users);
   res.json({ id, ...users[id] });
@@ -96,14 +100,17 @@ router.put('/:id', verifyToken, (req, res) => {
 router.delete('/:id', verifyToken, (req, res) => {
   logger.info('Attempting to delete user', {
     targetUserId: req.params.id,
-    requestingUser: req.user.id,
+    requestingUser: req.user.id
   });
 
   const userId = Number(req.params.id);
   const users = getDatabase('users');
 
-  const userEntry = Object.entries(users).find(([key]) => Number(key) === userId);
-  if (!userEntry) return res.status(404).json({ error: errorMessages.userNotFound });
+  const userEntry = Object.entries(users).find(
+    ([key]) => Number(key) === userId
+  );
+  if (!userEntry)
+    return res.status(404).json({ error: errorMessages.userNotFound });
 
   const [id, user] = userEntry;
 
@@ -112,7 +119,9 @@ router.delete('/:id', verifyToken, (req, res) => {
   }
 
   if (user.role === 'admin') {
-    return res.status(403).json({ error: errorMessages.cannotDeleteOtherAdmins });
+    return res
+      .status(403)
+      .json({ error: errorMessages.cannotDeleteOtherAdmins });
   }
 
   if (req.user.role !== 'admin') {
@@ -125,7 +134,7 @@ router.delete('/:id', verifyToken, (req, res) => {
   logger.info('User deleted successfully', {
     deletedUserId: userId,
     deletedUsername: user.username,
-    deletedBy: req.user.id,
+    deletedBy: req.user.id
   });
   res.json({ success: true, deletedId: userId, username: user.username });
 });
