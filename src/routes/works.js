@@ -78,7 +78,7 @@ router.post('/', (req, res) => {
 		title: req.body.title || `Reported Work ${nextId}`,
 		url: submittedUrl,
 		status: 'pending_review',
-		reporter: req.user ? req.user.username : 'Anonymous',
+		reporter: req.body.reporter || (req.user ? req.user.username : 'Anonymous'),
 		reason: req.body.reason || '',
 		proofs: req.body.proofs?.filter(p => p) || [],
 		additionalInfo: req.body.additionalInfo || '',
