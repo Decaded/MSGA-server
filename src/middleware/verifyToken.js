@@ -12,6 +12,7 @@
  */
 const jwt = require('jsonwebtoken');
 const { env, errorMessages } = require('../config');
+const { getDatabase } = require('../utils/db');
 
 module.exports = function verifyToken(req, res, next) {
   const auth = req.headers['authorization'];
