@@ -28,7 +28,7 @@ const workRoutes = require('./routes/works');
 
 const app = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 // Log database initialization
 try {
