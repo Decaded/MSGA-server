@@ -42,8 +42,9 @@ router.get('/', (req, res) => {
   // Update the database with the auto-approved works
   setDatabase('works', works);
 
-  // Return the works
-  res.json(works);
+  // Convert to array and sort by id descending (newest first)
+  const sortedWorks = Object.values(works).sort((a, b) => b.id - a.id);
+  res.json(sortedWorks);
 });
 
 router.post('/', (req, res) => {
@@ -115,6 +116,7 @@ router.put('/:id/status', verifyToken, (req, res) => {
     'taken_down',
     'original'
   ];
+
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: errorMessages.invalidStatus });
   }
