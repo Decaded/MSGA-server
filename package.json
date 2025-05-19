@@ -7,6 +7,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^2.7.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"
   },
@@ -42,5 +43,6 @@
   "bugs": {
     "url": "https://github.com/Decaded/MSGA-server/issues"
   },
-  "homepage": "https://github.com/Decaded/MSGA-server#readme"
+  "homepage": "https://github.com/Decaded/MSGA-server#readme",
+  "type": "commonjs"
 }

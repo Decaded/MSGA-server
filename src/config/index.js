@@ -35,6 +35,8 @@
  * @property {string} errorMessages.invalidToken - Message for invalid or expired token.
  * @property {string} errorMessages.tokenRevoked - Message for revoked token.
  * @property {string} errorMessages.corsError - Message for CORS error.
+ * @property {string} errorMessages.webhookExists - Message for existing webhook URL.
+ * @property {string} errorMessages.invalidWebhookUrl - Message for invalid webhook URL.
  *
  * @property {Object} regexPatterns - Regular expressions for validating URLs.
  * @property {RegExp} regexPatterns.shProfileURLPattern - Regex for ScribbleHub profile URLs.
@@ -77,12 +79,16 @@ module.exports = {
     invalidToken: 'Invalid or expired token. Please log in again.',
     invalidTokenFormat: 'Malformed authorization header. Please log in again.',
     tokenRevoked: 'Token has been revoked. Please log in again.',
-    corsError: 'Not allowed by CORS.'
+    corsError: 'Not allowed by CORS.',
+    webhookExists: 'Webhook with this URL already exists',
+    invalidWebhookURL: 'Invalid Discord webhook URL format'
   },
 
   regexPatterns: {
     shProfileURLPattern:
       /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
-    shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/
+    shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
+    discordWebhookPattern:
+      /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/i
   }
 };

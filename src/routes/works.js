@@ -15,6 +15,8 @@
  * Utilities:
  * - getDatabase: Retrieves the current state of the 'works' database.
  * - setDatabase: Persists changes to the 'works' database.
+ * - logger: Logs actions and errors for auditing and debugging.
+ * - sendToAllWebhooks: Notifies all registered webhooks about work updates.
  *
  * Error Handling:
  * - Returns appropriate error messages and status codes for missing fields, invalid URLs, or not found entries.
@@ -24,6 +26,7 @@
 const logger = require('../utils/logger');
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
+const { sendToAllWebhooks } = require('../utils/webhookNotifier');
 const verifyToken = require('../middleware/verifyToken');
 const { errorMessages, regexPatterns } = require('../config');
 
@@ -93,6 +96,11 @@ router.post('/', (req, res) => {
   works[nextId] = newWork;
   setDatabase('works', works);
 
+  sendToAllWebhooks('work_created', {
+    ...newWork,
+    updatedBy: req.user ? req.user.username : 'Anonymous'
+  });
+
   logger.info('New work created successfully', {
     workId: nextIdNum,
     title: newWork.title,
@@ -135,6 +143,11 @@ router.put('/:id/status', verifyToken, (req, res) => {
 
   setDatabase('works', works);
 
+  sendToAllWebhooks('work_updated', {
+    ...works[id],
+    updatedBy: req.user.username
+  });
+
   logger.info('Work status updated', {
     workId: id,
     oldStatus,
@@ -157,6 +170,11 @@ router.put('/:id/approve', verifyToken, (req, res) => {
   works[id].approved = true;
   works[id].status = 'in_progress';
   setDatabase('works', works);
+
+  sendToAllWebhooks('work_updated', {
+    ...works[id],
+    updatedBy: req.user.username
+  });
 
   logger.info('Work approved', {
     workId: id,
@@ -183,6 +201,12 @@ router.delete('/:id', verifyToken, (req, res) => {
   const [dbKey, work] = workEntry;
   delete works[dbKey];
   setDatabase('works', works);
+
+  sendToAllWebhooks('work_updated', {
+    ...work,
+    updatedBy: req.user.username
+  });
+
   logger.info('Work deleted', {
     workId: id,
     title: work.title,
@@ -225,6 +249,11 @@ router.put('/:id', verifyToken, (req, res) => {
         newValue: req.body[key]
       };
     }
+  });
+
+    sendToAllWebhooks('work_updated', {
+    ...work,
+    updatedBy: req.user.username
   });
 
   Object.assign(work, req.body);
