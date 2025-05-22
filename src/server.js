@@ -25,6 +25,7 @@ const { env } = require('./config');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const workRoutes = require('./routes/works');
+const profileRoutes = require('./routes/profiles');
 const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
@@ -88,6 +89,7 @@ app.use('/MSGA/register', authLimiter);
 app.use('/MSGA', authRoutes);
 app.use('/MSGA/users', userRoutes);
 app.use('/MSGA/works', workRoutes);
+app.use('/MSGA/profiles', profileRoutes);
 app.use('/MSGA/webhooks', webhookRoutes);
 
 app.use((err, req, res) => {
