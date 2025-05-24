@@ -82,18 +82,18 @@ app.use((err, req, res, next) => {
 });
 
 // Rate limiting for authentication routes
-app.use('/MSGA/login', authLimiter);
-app.use('/MSGA/register', authLimiter);
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
 
 // Routes
-app.use('/MSGA', authRoutes);
-app.use('/MSGA/users', userRoutes);
-app.use('/MSGA/works', workRoutes);
-app.use('/MSGA/profiles', profileRoutes);
-app.use('/MSGA/webhooks', webhookRoutes);
+app.use('', authRoutes);
+app.use('/users', userRoutes);
+app.use('/works', workRoutes);
+app.use('/profiles', profileRoutes);
+app.use('/webhooks', webhookRoutes);
 
-app.use((err, req, res) => {
-  logger.error('Unhandled exception', { error: err.message, stack: err.stack });
+app.use((err, req, res, next) => {
+  logger.error('Unhandled exception', { error: err.message, stack: err.stack, url: req.originalUrl });
   res.status(500).json({ error: 'Internal server error' });
 });
 
