@@ -37,6 +37,9 @@
  * @property {string} errorMessages.corsError - Message for CORS error.
  * @property {string} errorMessages.webhookExists - Message for existing webhook URL.
  * @property {string} errorMessages.invalidWebhookUrl - Message for invalid webhook URL.
+ * @property {string} errorMessages.profileUrlRequired - Message for missing profile URL.
+ * @property {string} errorMessages.invalidSHProfileUrl - Message for invalid ScribbleHub profile URL.
+ * @property {string} errorMessages.profileExists - Message for existing profile report.
  *
  * @property {Object} regexPatterns - Regular expressions for validating URLs.
  * @property {RegExp} regexPatterns.shProfileURLPattern - Regex for ScribbleHub profile URLs.
@@ -81,7 +84,10 @@ module.exports = {
     tokenRevoked: 'Token has been revoked. Please log in again.',
     corsError: 'Not allowed by CORS.',
     webhookExists: 'Webhook with this URL already exists',
-    invalidWebhookURL: 'Invalid Discord webhook URL format'
+    invalidWebhookURL: 'Invalid Discord webhook URL format',
+    profileUrlRequired: 'Profile URL is required.',
+invalidSHProfileUrl: 'Invalid ScribbleHub profile URL format.',
+profileExists: 'This profile has already been reported.',
   },
 
   regexPatterns: {
