@@ -33,7 +33,7 @@ async function sendToAllWebhooks(eventType, data) {
   );
 }
 
-function createDiscordMessage(eventType, work) {
+function createDiscordMessage(eventType, data) {
   if (eventType.startsWith('profile_')) {
     return {
       username: 'MSGA Notifier',
@@ -63,16 +63,14 @@ function createDiscordMessage(eventType, work) {
         title: `${eventType.replace('_', ' ').toUpperCase()}`,
         color: 0x58b058,
         fields: [
-          { name: 'Title', value: work.title },
-          { name: 'Status', value: work.status.toUpperCase(), inline: true },
-          { name: 'Reporter', value: work.reporter, inline: true },
-          { name: 'Updated by', value: work.updatedBy, inline: true },
-          { name: 'URL', value: `[View on ScribbleHub](${work.url})` }
+          { name: 'Title', value: data.title },
+          { name: 'Status', value: data.status.toUpperCase(), inline: true },
+          { name: 'Reporter', value: data.reporter, inline: true },
+          { name: 'Updated by', value: data.updatedBy, inline: true },
+          { name: 'URL', value: `[View on ScribbleHub](${data.url})` }
         ],
         timestamp: new Date().toISOString(),
-        footer: {
-          text: 'msga.decaded.dev'
-        }
+        footer: { text: 'msga.decaded.dev' }
       }
     ]
   };
