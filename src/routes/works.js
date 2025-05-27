@@ -35,9 +35,9 @@ const router = express.Router();
 router.get('/', (req, res) => {
   logger.info('Fetching all works');
   const works = getDatabase('works');
-  // Auto‑approve any work that slipped through
+  // Auto‑approve any work that slipped through, but only if status is not "pending_review"
   Object.values(works).forEach(w => {
-    if (w.approved === false) {
+    if (w.approved === false && w.status !== 'pending_review') {
       w.approved = true;
     }
   });
