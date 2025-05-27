@@ -41,6 +41,8 @@ const fetch = (...args) =>
 const { getDatabase, setDatabase } = require('./db');
 const logger = require('./logger');
 
+const now = new Date().toISOString();
+
 async function sendToAllWebhooks(eventType, data) {
   const webhooks = getDatabase('webhooks');
   const updatedTimestamps = {};
@@ -58,7 +60,7 @@ async function sendToAllWebhooks(eventType, data) {
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        updatedTimestamps[webhook.id] = new Date().toISOString();
+        updatedTimestamps[webhook.id] = now;
       } catch (error) {
         logger.error('Webhook failed', {
           webhookId: webhook.id,
@@ -112,7 +114,7 @@ function createDiscordMessage(eventType, data) {
         title: eventType.replace('_', ' ').toUpperCase(),
         color: STATUS_COLORS[data.status] ?? 0x95a5a6,
         fields,
-        timestamp: new Date().toISOString(),
+        timestamp: now,
         footer: { text: 'msga.decaded.dev' }
       }
     ]
