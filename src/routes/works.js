@@ -1,7 +1,7 @@
 /**
  * @module routes/works
  * @description Express router for handling work-related operations.
- * 
+ *
  * Routes:
  * - GET /           : Fetch all works. Auto-approves works not pending review.
  * - POST /          : Submit a new work report. Validates and prevents duplicates.
@@ -9,16 +9,16 @@
  * - PUT /:id/approve: Approve a work and set status to 'in_progress'. Requires authentication.
  * - DELETE /:id     : Delete a work. Only accessible by admin users.
  * - PUT /:id        : Update work fields. Only admin can update protected fields ('approved', 'status').
- * 
+ *
  * Middleware:
  * - verifyToken     : Ensures the user is authenticated for protected routes.
- * 
+ *
  * Utilities:
  * - logger          : For logging actions and warnings.
  * - getDatabase     : Retrieves the works database.
  * - setDatabase     : Updates the works database.
  * - sendToAllWebhooks: Notifies external services of work changes.
- * 
+ *
  * @requires express
  * @requires ../utils/logger
  * @requires ../utils/db
@@ -39,7 +39,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   logger.info('Fetching all works');
   const works = getDatabase('works');
-  
+
   // Auto-approve any work that slipped through, but only if status is not "pending_review"
   Object.values(works).forEach(w => {
     if (w.approved === false && w.status !== 'pending_review') {
@@ -81,7 +81,9 @@ router.post('/', (req, res) => {
     work => work.url.trim() === submittedUrl
   );
   if (isDuplicate) {
-    logger.warn('Work submission failed - duplicate work', { url: submittedUrl });
+    logger.warn('Work submission failed - duplicate work', {
+      url: submittedUrl
+    });
     return res.status(409).json({ error: errorMessages.workExists });
   }
 
@@ -199,7 +201,7 @@ router.delete('/:id', verifyToken, (req, res) => {
     logger.warn('Unauthorized delete attempt', { user: req.user.username });
     return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
   }
-  
+
   const id = parseInt(req.params.id);
   const works = getDatabase('works');
   const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
@@ -244,11 +246,15 @@ router.put('/:id', verifyToken, (req, res) => {
       protectedFields.includes(key)
     );
     if (isEditingProtectedField) {
-      logger.warn('Unauthorized field update attempt', { 
+      logger.warn('Unauthorized field update attempt', {
         user: req.user.username,
-        fields: Object.keys(req.body).filter(key => protectedFields.includes(key))
+        fields: Object.keys(req.body).filter(key =>
+          protectedFields.includes(key)
+        )
       });
-      return res.status(403).json({ error: errorMessages.unauthorizedFieldUpdate });
+      return res
+        .status(403)
+        .json({ error: errorMessages.unauthorizedFieldUpdate });
     }
   }
 
