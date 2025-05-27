@@ -204,7 +204,7 @@ router.delete('/:id', verifyToken, (req, res) => {
 
   if (!profileEntry) {
     logger.warn('Delete failed - profile not found', { profileId: id });
-    return res.status(404).json({ error: errorMessages });
+    return res.status(404).json({ error: errorMessages.profileNotFound });
   }
 
   const [dbKey, profile] = profileEntry;
