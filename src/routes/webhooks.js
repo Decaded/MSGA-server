@@ -1,3 +1,21 @@
+/**
+ * Express router for managing Discord webhooks.
+ * 
+ * Provides endpoints to:
+ * - List all webhooks (GET /)
+ * - Add a new webhook (POST /)
+ * - Delete a webhook by ID (DELETE /:id)
+ * 
+ * All routes require authentication and admin privileges.
+ * 
+ * @module routes/webhooks
+ * @requires express
+ * @requires ../utils/db
+ * @requires ../middleware/verifyToken
+ * @requires ../utils/logger
+ * @requires ../config
+ */
+
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
 const verifyToken = require('../middleware/verifyToken');
