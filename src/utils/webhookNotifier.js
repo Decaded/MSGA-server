@@ -5,7 +5,7 @@
  *
  * @async
  * @function
- * @param {string} eventType - The type of event triggering the webhook notification.
+ * @param {string} eventType - The event type, e.g., "profile_added", "work_confirmed". Determines embed layout.
  * @param {Object} data - The data payload to include in the webhook message.
  * @param {string} data.title - The title of the resource/event.
  * @param {string} data.status - The status of the resource (e.g. "pending", "approved").
@@ -41,16 +41,15 @@ const fetch = (...args) =>
 const { getDatabase, setDatabase } = require('./db');
 const logger = require('./logger');
 
-const now = new Date().toISOString();
-
 async function sendToAllWebhooks(eventType, data) {
   const webhooks = getDatabase('webhooks');
   const updatedTimestamps = {};
+  const now = new Date().toISOString();
 
   await Promise.all(
     Object.values(webhooks).map(async webhook => {
       try {
-        const message = createDiscordMessage(eventType, data);
+        const message = createDiscordMessage(eventType, data, now);
 
         const response = await fetch(webhook.url, {
           method: 'POST',
@@ -81,7 +80,7 @@ async function sendToAllWebhooks(eventType, data) {
   setDatabase('webhooks', webhooks);
 }
 
-function createDiscordMessage(eventType, data) {
+function createDiscordMessage(eventType, data, timestamp) {
   const isProfile = eventType.startsWith('profile_');
   const fields = [];
 
@@ -114,7 +113,7 @@ function createDiscordMessage(eventType, data) {
         title: eventType.replace(/_/g, ' ').toUpperCase(),
         color: STATUS_COLORS[data.status] ?? 0x95a5a6,
         fields,
-        timestamp: now,
+        timestamp,
         footer: { text: 'msga.decaded.dev' }
       }
     ]
