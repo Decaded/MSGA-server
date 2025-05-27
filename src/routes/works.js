@@ -1,28 +1,32 @@
 /**
- * Express router for handling "works" related routes.
- *
- * Endpoints:
- * - GET /           : Returns all works from the database.
- * - POST /          : Adds a new work report. Validates URL and required fields.
- * - PUT /:id/status : Updates the status of a work entry by ID. Requires authentication.
- * - PUT /:id/approve: Approves a work entry and sets its status to 'in_progress'. Requires authentication.
- * - DELETE /:id     : Deletes a work entry by ID. Requires authentication.
- * - PUT /:id        : Updates a work entry by ID with provided fields. Requires authentication.
- *
- * Middleware:
- * - verifyToken: Used for protected routes to ensure the user is authenticated.
- *
- * Utilities:
- * - getDatabase: Retrieves the current state of the 'works' database.
- * - setDatabase: Persists changes to the 'works' database.
- * - logger: Logs actions and errors for auditing and debugging.
- * - sendToAllWebhooks: Notifies all registered webhooks about work updates.
- *
- * Error Handling:
- * - Returns appropriate error messages and status codes for missing fields, invalid URLs, or not found entries.
- *
  * @module routes/works
+ * @description Express router for handling work-related operations.
+ * 
+ * Routes:
+ * - GET /           : Fetch all works. Auto-approves works not pending review.
+ * - POST /          : Submit a new work report. Validates and prevents duplicates.
+ * - PUT /:id/status : Update the status of a work. Requires authentication.
+ * - PUT /:id/approve: Approve a work and set status to 'in_progress'. Requires authentication.
+ * - DELETE /:id     : Delete a work. Only accessible by admin users.
+ * - PUT /:id        : Update work fields. Only admin can update protected fields ('approved', 'status').
+ * 
+ * Middleware:
+ * - verifyToken     : Ensures the user is authenticated for protected routes.
+ * 
+ * Utilities:
+ * - logger          : For logging actions and warnings.
+ * - getDatabase     : Retrieves the works database.
+ * - setDatabase     : Updates the works database.
+ * - sendToAllWebhooks: Notifies external services of work changes.
+ * 
+ * @requires express
+ * @requires ../utils/logger
+ * @requires ../utils/db
+ * @requires ../utils/webhookNotifier
+ * @requires ../middleware/verifyToken
+ * @requires ../config
  */
+
 const logger = require('../utils/logger');
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
@@ -35,17 +39,18 @@ const router = express.Router();
 router.get('/', (req, res) => {
   logger.info('Fetching all works');
   const works = getDatabase('works');
-  // Auto‑approve any work that slipped through, but only if status is not "pending_review"
+  
+  // Auto-approve any work that slipped through, but only if status is not "pending_review"
   Object.values(works).forEach(w => {
     if (w.approved === false && w.status !== 'pending_review') {
+      logger.debug(`Auto-approving work ${w.id}`, { workId: w.id });
       w.approved = true;
     }
   });
 
   // Update the database with the auto-approved works
   setDatabase('works', works);
-
-  // Return the works
+  logger.info('Returning all works', { count: Object.keys(works).length });
   res.json(works);
 });
 
@@ -71,15 +76,15 @@ router.post('/', (req, res) => {
     logger.warn('Work submission failed - invalid URL', { url: submittedUrl });
     return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
   }
+
   const isDuplicate = Object.values(works).some(
     work => work.url.trim() === submittedUrl
   );
   if (isDuplicate) {
-    logger.warn('Work submission failed - duplicate work', {
-      url: submittedUrl
-    });
+    logger.warn('Work submission failed - duplicate work', { url: submittedUrl });
     return res.status(409).json({ error: errorMessages.workExists });
   }
+
   const newWork = {
     id: nextIdNum,
     title: req.body.title || `Reported Work ${nextId}`,
@@ -96,6 +101,7 @@ router.post('/', (req, res) => {
   works[nextId] = newWork;
   setDatabase('works', works);
 
+  logger.info('Sending work_created webhook', { workId: nextIdNum });
   sendToAllWebhooks('work_created', {
     ...newWork,
     updatedBy: req.user ? req.user.username : 'Anonymous'
@@ -124,6 +130,7 @@ router.put('/:id/status', verifyToken, (req, res) => {
     'original'
   ];
   if (!validStatuses.includes(status)) {
+    logger.warn('Invalid status provided', { status });
     return res.status(400).json({ error: errorMessages.invalidStatus });
   }
 
@@ -133,16 +140,17 @@ router.put('/:id/status', verifyToken, (req, res) => {
   }
 
   const oldStatus = work.status;
-
   works[id].status = status;
 
-  // If someone changed status but forgot to approve, auto‑approve it
+  // If someone changed status but forgot to approve, auto-approve it
   if (works[id].approved === false) {
+    logger.debug(`Auto-approving work during status update`, { workId: id });
     works[id].approved = true;
   }
 
   setDatabase('works', works);
 
+  logger.info('Sending work_updated webhook', { workId: id });
   sendToAllWebhooks('work_updated', {
     ...works[id],
     updatedBy: req.user.username
@@ -171,6 +179,7 @@ router.put('/:id/approve', verifyToken, (req, res) => {
   works[id].status = 'in_progress';
   setDatabase('works', works);
 
+  logger.info('Sending work_updated webhook', { workId: id });
   sendToAllWebhooks('work_updated', {
     ...works[id],
     updatedBy: req.user.username
@@ -187,8 +196,10 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 
 router.delete('/:id', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
+    logger.warn('Unauthorized delete attempt', { user: req.user.username });
     return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
   }
+  
   const id = parseInt(req.params.id);
   const works = getDatabase('works');
   const workEntry = Object.entries(works).find(([_, work]) => work.id === id);
@@ -202,7 +213,8 @@ router.delete('/:id', verifyToken, (req, res) => {
   delete works[dbKey];
   setDatabase('works', works);
 
-  sendToAllWebhooks('work_updated', {
+  logger.info('Sending work_deleted webhook', { workId: id });
+  sendToAllWebhooks('work_deleted', {
     ...work,
     updatedBy: req.user.username
   });
@@ -232,9 +244,11 @@ router.put('/:id', verifyToken, (req, res) => {
       protectedFields.includes(key)
     );
     if (isEditingProtectedField) {
-      return res
-        .status(403)
-        .json({ error: errorMessages.unauthorizedFieldUpdate });
+      logger.warn('Unauthorized field update attempt', { 
+        user: req.user.username,
+        fields: Object.keys(req.body).filter(key => protectedFields.includes(key))
+      });
+      return res.status(403).json({ error: errorMessages.unauthorizedFieldUpdate });
     }
   }
 
@@ -251,7 +265,8 @@ router.put('/:id', verifyToken, (req, res) => {
     }
   });
 
-    sendToAllWebhooks('work_updated', {
+  logger.info('Sending work_updated webhook', { workId: id });
+  sendToAllWebhooks('work_updated', {
     ...work,
     updatedBy: req.user.username
   });
