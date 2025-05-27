@@ -1,3 +1,24 @@
+/**
+ * Sends a Discord-formatted message to all registered webhooks for a given event type and data.
+ * Updates the `lastUsed` timestamp for each webhook upon successful notification.
+ * Logs errors if a webhook notification fails.
+ *
+ * @async
+ * @function
+ * @param {string} eventType - The type of event triggering the webhook notification.
+ * @param {Object} data - The data payload to include in the webhook message.
+ * @returns {Promise<void[]>} A promise that resolves when all webhook notifications have been attempted.
+ */
+
+/**
+ * Creates a Discord webhook message object based on the event type and provided data.
+ *
+ * @function
+ * @param {string} eventType - The type of event to format the message for.
+ * @param {Object} data - The data to include in the message embed.
+ * @returns {Object} The formatted Discord webhook message payload.
+ */
+
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const { getDatabase, setDatabase } = require('./db');
