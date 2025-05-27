@@ -1,7 +1,7 @@
 /**
  * @module routes/profiles
  * @description Express router for handling profile-related operations.
- * 
+ *
  * Routes:
  * - GET /           : Fetch all profiles. Auto-approves profiles not pending review.
  * - POST /          : Submit a new profile report. Validates and prevents duplicates.
@@ -9,16 +9,16 @@
  * - PUT /:id/approve: Approve a profile and set status to 'in_progress'. Requires authentication.
  * - DELETE /:id     : Delete a profile. Only accessible by admin users.
  * - PUT /:id        : Update profile fields. Only admin can update protected fields ('approved', 'status').
- * 
+ *
  * Middleware:
  * - verifyToken     : Ensures the user is authenticated for protected routes.
- * 
+ *
  * Utilities:
  * - logger          : For logging actions and warnings.
  * - getDatabase     : Retrieves the profiles database.
  * - setDatabase     : Updates the profiles database.
  * - sendToAllWebhooks: Notifies external services of profile changes.
- * 
+ *
  * @requires express
  * @requires ../utils/logger
  * @requires ../utils/db
@@ -40,7 +40,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   logger.info('Fetching all profiles');
   const profiles = getDatabase('profiles');
-  
+
   // Auto-approve any profile that slipped through and is not pending_review
   Object.values(profiles).forEach(p => {
     if (p.approved === false && p.status !== 'pending_review') {
@@ -51,7 +51,9 @@ router.get('/', (req, res) => {
 
   // Update the database with the auto-approved profiles
   setDatabase('profiles', profiles);
-  logger.info('Returning all profiles', { count: Object.keys(profiles).length });
+  logger.info('Returning all profiles', {
+    count: Object.keys(profiles).length
+  });
   res.json(profiles);
 });
 
@@ -72,7 +74,9 @@ router.post('/', (req, res) => {
   }
 
   if (!regexPatterns.shProfileURLPattern.test(submittedUrl)) {
-    logger.warn('Profile submission failed - invalid URL', { url: submittedUrl });
+    logger.warn('Profile submission failed - invalid URL', {
+      url: submittedUrl
+    });
     return res.status(400).json({ error: errorMessages.invalidSHProfileUrl });
   }
 
@@ -80,7 +84,9 @@ router.post('/', (req, res) => {
     profile => profile.url.trim() === submittedUrl
   );
   if (isDuplicate) {
-    logger.warn('Profile submission failed - duplicate profile', { url: submittedUrl });
+    logger.warn('Profile submission failed - duplicate profile', {
+      url: submittedUrl
+    });
     return res.status(409).json({ error: errorMessages.profileExists });
   }
 
@@ -100,8 +106,8 @@ router.post('/', (req, res) => {
   profiles[nextIdNum] = newProfile;
   setDatabase('profiles', profiles);
 
-  logger.info('Sending profile_created webhook', { profileId: nextIdNum });
-  sendToAllWebhooks('profile_created', {
+  logger.info('Sending profile_reported webhook', { profileId: nextIdNum });
+  sendToAllWebhooks('profile_reported', {
     ...newProfile,
     updatedBy: req.user ? req.user.username : 'Anonymous'
   });
@@ -142,7 +148,9 @@ router.put('/:id/status', verifyToken, (req, res) => {
 
   // Auto-approve if status is changed but not approved
   if (profiles[id].approved === false) {
-    logger.debug(`Auto-approving profile during status update`, { profileId: id });
+    logger.debug(`Auto-approving profile during status update`, {
+      profileId: id
+    });
     profiles[id].approved = true;
   }
 
@@ -197,10 +205,12 @@ router.delete('/:id', verifyToken, (req, res) => {
     logger.warn('Unauthorized delete attempt', { user: req.user.username });
     return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
   }
-  
+
   const id = parseInt(req.params.id);
   const profiles = getDatabase('profiles');
-  const profileEntry = Object.entries(profiles).find(([_, profile]) => profile.id === id);
+  const profileEntry = Object.entries(profiles).find(
+    ([_, profile]) => profile.id === id
+  );
 
   if (!profileEntry) {
     logger.warn('Delete failed - profile not found', { profileId: id });
@@ -229,7 +239,9 @@ router.delete('/:id', verifyToken, (req, res) => {
 router.put('/:id', verifyToken, (req, res) => {
   const id = parseInt(req.params.id);
   const profiles = getDatabase('profiles');
-  const profileEntry = Object.entries(profiles).find(([_, profile]) => profile.id === id);
+  const profileEntry = Object.entries(profiles).find(
+    ([_, profile]) => profile.id === id
+  );
 
   if (!profileEntry) {
     logger.warn('Update failed - profile not found', { profileId: id });
@@ -242,11 +254,15 @@ router.put('/:id', verifyToken, (req, res) => {
       protectedFields.includes(key)
     );
     if (isEditingProtectedField) {
-      logger.warn('Unauthorized field update attempt', { 
+      logger.warn('Unauthorized field update attempt', {
         user: req.user.username,
-        fields: Object.keys(req.body).filter(key => protectedFields.includes(key))
+        fields: Object.keys(req.body).filter(key =>
+          protectedFields.includes(key)
+        )
       });
-      return res.status(403).json({ error: errorMessages.unauthorizedFieldUpdate });
+      return res
+        .status(403)
+        .json({ error: errorMessages.unauthorizedFieldUpdate });
     }
   }
 
