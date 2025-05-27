@@ -7,11 +7,17 @@
  * @function
  * @param {string} eventType - The type of event triggering the webhook notification.
  * @param {Object} data - The data payload to include in the webhook message.
- * @returns {Promise<void[]>} A promise that resolves when all webhook notifications have been attempted.
+ * @param {string} data.title - The title of the resource/event.
+ * @param {string} data.status - The status of the resource (e.g. "pending", "approved").
+ * @param {string} data.reporter - The person who reported the resource.
+ * @param {string} [data.updatedBy] - The person who last updated the resource (optional).
+ * @param {string} data.url - A link to the resource.
+ * @returns {Promise<void>} A promise that resolves when all webhook notifications have been processed.
  */
 
 /**
  * Creates a Discord webhook message object based on the event type and provided data.
+ * Omits the "Updated by" field if the value is "Anonymous" or not provided.
  *
  * @function
  * @param {string} eventType - The type of event to format the message for.
@@ -19,15 +25,18 @@
  * @returns {Object} The formatted Discord webhook message payload.
  */
 
+
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
 const { getDatabase, setDatabase } = require('./db');
 const logger = require('./logger');
 
 async function sendToAllWebhooks(eventType, data) {
   const webhooks = getDatabase('webhooks');
+  const updatedTimestamps = {};
 
-  return Promise.all(
+  await Promise.all(
     Object.values(webhooks).map(async webhook => {
       try {
         const message = createDiscordMessage(eventType, data);
@@ -35,45 +44,55 @@ async function sendToAllWebhooks(eventType, data) {
         const response = await fetch(webhook.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(message)
+          body: JSON.stringify(message),
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        // Update lastUsed timestamp
-        webhooks[webhook.id].lastUsed = new Date().toISOString();
-        setDatabase('webhooks', webhooks);
+        updatedTimestamps[webhook.id] = new Date().toISOString();
       } catch (error) {
         logger.error('Webhook failed', {
           webhookId: webhook.id,
           error: error.message,
-          url: webhook.url
+          url: webhook.url,
         });
       }
     })
   );
+
+  // Save timestamps after all attempts
+  for (const [id, timestamp] of Object.entries(updatedTimestamps)) {
+    if (webhooks[id]) {
+      webhooks[id].lastUsed = timestamp;
+    }
+  }
+
+  setDatabase('webhooks', webhooks);
 }
 
 function createDiscordMessage(eventType, data) {
-  if (eventType.startsWith('profile_')) {
-    return {
-      username: 'MSGA Notifier',
-      avatar_url: 'https://decaded.dev/public/assets/MSGA/logo.png',
-      embeds: [
-        {
-          title: `${eventType.replace('_', ' ').toUpperCase()}`,
-          color: 0x58b058,
-          fields: [
-            { name: 'Profile', value: data.title },
-            { name: 'Status', value: data.status.toUpperCase(), inline: true },
-            { name: 'Reporter', value: data.reporter, inline: true },
-            { name: 'URL', value: `[View Profile](${data.url})` }
-          ],
-          timestamp: new Date().toISOString(),
-          footer: { text: 'msga.decaded.dev' }
-        }
-      ]
-    };
+  const isProfile = eventType.startsWith('profile_');
+  const fields = [];
+
+  if (isProfile) {
+    fields.push(
+      { name: 'Profile', value: data.title },
+      { name: 'Status', value: data.status.toUpperCase(), inline: true },
+      { name: 'Reporter', value: data.reporter, inline: true },
+      { name: 'URL', value: `[View Profile](${data.url})` }
+    );
+  } else {
+    fields.push(
+      { name: 'Title', value: data.title },
+      { name: 'Status', value: data.status.toUpperCase(), inline: true },
+      { name: 'Reporter', value: data.reporter, inline: true }
+    );
+
+    if (data.updatedBy && data.updatedBy !== 'Anonymous') {
+      fields.push({ name: 'Updated by', value: data.updatedBy, inline: true });
+    }
+
+    fields.push({ name: 'URL', value: `[View on ScribbleHub](${data.url})` });
   }
 
   return {
@@ -81,19 +100,13 @@ function createDiscordMessage(eventType, data) {
     avatar_url: 'https://decaded.dev/public/assets/MSGA/logo.png',
     embeds: [
       {
-        title: `${eventType.replace('_', ' ').toUpperCase()}`,
+        title: eventType.replace('_', ' ').toUpperCase(),
         color: 0x58b058,
-        fields: [
-          { name: 'Title', value: data.title },
-          { name: 'Status', value: data.status.toUpperCase(), inline: true },
-          { name: 'Reporter', value: data.reporter, inline: true },
-          { name: 'Updated by', value: data.updatedBy, inline: true },
-          { name: 'URL', value: `[View on ScribbleHub](${data.url})` }
-        ],
+        fields,
         timestamp: new Date().toISOString(),
-        footer: { text: 'msga.decaded.dev' }
-      }
-    ]
+        footer: { text: 'msga.decaded.dev' },
+      },
+    ],
   };
 }
 
