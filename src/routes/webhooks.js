@@ -6,7 +6,6 @@ const { errorMessages, regexPatterns } = require('../config');
 
 const router = express.Router();
 
-
 // Get all webhooks
 router.get('/', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
