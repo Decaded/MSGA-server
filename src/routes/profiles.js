@@ -10,9 +10,9 @@ const router = express.Router();
 router.get('/', (req, res) => {
   logger.info('Fetching all profiles');
   const profiles = getDatabase('profiles');
-  // Auto-approve any profile that slipped through
+  // Auto-approve any profile that slipped through and is not pending_review
   Object.values(profiles).forEach(p => {
-    if (p.approved === false) {
+    if (p.approved === false && p.status !== 'pending_review') {
       p.approved = true;
     }
   });
