@@ -111,7 +111,7 @@ function createDiscordMessage(eventType, data) {
     avatar_url: 'https://decaded.dev/public/assets/MSGA/logo.png',
     embeds: [
       {
-        title: eventType.replace('_', ' ').toUpperCase(),
+        title: eventType.replace(/_/g, ' ').toUpperCase(),
         color: STATUS_COLORS[data.status] ?? 0x95a5a6,
         fields,
         timestamp: now,
