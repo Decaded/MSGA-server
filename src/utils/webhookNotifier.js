@@ -111,7 +111,9 @@ function createDiscordMessage(eventType, data, timestamp) {
     embeds: [
       {
         title: eventType.replace(/_/g, ' ').toUpperCase(),
-        color: STATUS_COLORS[data.status] ?? 0x95a5a6,
+        color: eventType.endsWith('_deleted')
+          ? 0x95a5a6
+          : STATUS_COLORS[data.status] ?? 0x95a5a6,
         fields,
         timestamp,
         footer: { text: 'msga.decaded.dev' }
