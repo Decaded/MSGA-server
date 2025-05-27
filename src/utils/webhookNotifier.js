@@ -25,6 +25,15 @@
  * @returns {Object} The formatted Discord webhook message payload.
  */
 
+const STATUS_COLORS = {
+  pending_review: 0xffcc00,
+  in_progress: 0x3498db,
+  confirmed_violator: 0xe74c3c,
+  false_positive: 0x2ecc71,
+  confirmed: 0x2ecc71,
+  taken_down: 0xe74c3c,
+  original: 0x95a5a6
+};
 
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -44,7 +53,7 @@ async function sendToAllWebhooks(eventType, data) {
         const response = await fetch(webhook.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(message),
+          body: JSON.stringify(message)
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -54,7 +63,7 @@ async function sendToAllWebhooks(eventType, data) {
         logger.error('Webhook failed', {
           webhookId: webhook.id,
           error: error.message,
-          url: webhook.url,
+          url: webhook.url
         });
       }
     })
@@ -101,12 +110,12 @@ function createDiscordMessage(eventType, data) {
     embeds: [
       {
         title: eventType.replace('_', ' ').toUpperCase(),
-        color: 0x58b058,
+        color: STATUS_COLORS[data.status] ?? 0x95a5a6,
         fields,
         timestamp: new Date().toISOString(),
-        footer: { text: 'msga.decaded.dev' },
-      },
-    ],
+        footer: { text: 'msga.decaded.dev' }
+      }
+    ]
   };
 }
 
