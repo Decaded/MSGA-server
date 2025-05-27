@@ -60,7 +60,7 @@ router.delete('/:id', verifyToken, (req, res) => {
   const { id } = req.params;
 
   if (!webhooks[id]) {
-    return res.status(404).json({ error: 'Webhook not found' });
+    return res.status(404).json({ error: errorMessages.webhookNotFound });
   }
 
   delete webhooks[id];
