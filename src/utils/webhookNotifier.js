@@ -78,7 +78,11 @@ function createDiscordMessage(eventType, data, timestamp) {
   if (isProfile) {
     fields.push(
       { name: 'Profile', value: data.title },
-      { name: 'Status', value: data.status.toUpperCase(), inline: true },
+      {
+        name: 'Status',
+        value: data.status.toUpperCase().replace(/_/g, ' '),
+        inline: true
+      },
       { name: 'Reporter', value: data.reporter, inline: true },
       { name: 'URL', value: `[View Profile](${data.url})` }
     );
