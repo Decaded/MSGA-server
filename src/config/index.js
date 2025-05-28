@@ -111,5 +111,15 @@ module.exports = {
     shWorkURLPattern: /^https:\/\/www\.scribblehub\.com\/series\/\d+/,
     discordWebhookPattern:
       /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/i
+  },
+
+  STATUS_COLORS: {
+    pending_review: 0xffcc00, // Yellow
+    in_progress: 0x3498db, // Blue
+    confirmed_violator: 0xe74c3c, // Red
+    false_positive: 0x9b59b6, // Purple/Pink
+    confirmed: 0x2ecc71, // Green
+    taken_down: 0xe74c3c, // Red
+    original: 0x9b59b6 // Purple/Pink
   }
 };
