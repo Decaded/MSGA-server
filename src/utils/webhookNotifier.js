@@ -89,7 +89,11 @@ function createDiscordMessage(eventType, data, timestamp) {
   } else {
     fields.push(
       { name: 'Title', value: data.title },
-      { name: 'Status', value: data.status.toUpperCase(), inline: true },
+      {
+        name: 'Status',
+        value: data.status.toUpperCase().replace(/_/g, ' '),
+        inline: true
+      },
       { name: 'Reporter', value: data.reporter, inline: true }
     );
 
