@@ -10,16 +10,12 @@
  * @module server
  */
 
-require('dotenv').config();
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-
 const cors = require('cors');
 const corsOptions = require('./middleware/corsConfig');
-
 const { initDB } = require('./utils/db');
 const logger = require('./utils/logger');
-
 const { env } = require('./config');
 
 const authRoutes = require('./routes/auth');
@@ -27,6 +23,7 @@ const userRoutes = require('./routes/users');
 const workRoutes = require('./routes/works');
 const profileRoutes = require('./routes/profiles');
 const webhookRoutes = require('./routes/webhooks');
+const uploadsRoutes = require('./routes/uploads'); 
 
 const app = express();
 
@@ -91,9 +88,15 @@ app.use('/MSGA/users', userRoutes);
 app.use('/MSGA/works', workRoutes);
 app.use('/MSGA/profiles', profileRoutes);
 app.use('/MSGA/webhooks', webhookRoutes);
+app.use('/MSGA/uploads', uploadsRoutes); 
 
+// Global error handler
 app.use((err, req, res, next) => {
-  logger.error('Unhandled exception', { error: err.message, stack: err.stack, url: req.originalUrl });
+  logger.error('Unhandled exception', {
+    error: err.message,
+    stack: err.stack,
+    url: req.originalUrl
+  });
   res.status(500).json({ error: 'Internal server error' });
 });
 

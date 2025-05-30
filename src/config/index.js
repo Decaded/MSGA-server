@@ -53,6 +53,7 @@
 require('dotenv').config();
 
 module.exports = {
+  // Environment-specific configuration
   env: {
     port: process.env.PORT || 3000,
     allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -62,6 +63,13 @@ module.exports = {
     jwtExpiration: process.env.JWT_EXPIRATION || '1h'
   },
 
+  // Standardized info messages for consistency across the application
+  infoMessages: {
+    // Content Management (Works/Profiles/Uploads)
+    filesUploadedSuccessfully: ' file(s) uploaded successfully'
+  },
+
+  // Standardized error messages for consistency across the application
   errorMessages: {
     // Authentication & Authorization
     noToken: 'No token provided. Please log in.',
@@ -83,7 +91,7 @@ module.exports = {
     approvalRequired: 'Approval status must be provided.',
     unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
 
-    // Content Management (Works/Profiles)
+    // Content Management (Works/Profiles/Uploads)
     workUrlRequired: 'Work URL is required.',
     profileUrlRequired: 'Profile URL is required.',
     invalidSHProfile: 'Invalid SH profile URL format.',
@@ -95,6 +103,16 @@ module.exports = {
     profileNotFound: 'Profile not found. Please check the ID and try again.',
     invalidStatus:
       'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
+    missingIdOrType: 'Missing work/profile ID or type. Please provide both.',
+    fileRequired: 'File is required. Please upload a file.',
+    fileTooLarge: 'File size exceeds the limit of 5MB.',
+    tooManyFiles: 'Too many files uploaded. Limit is 10 files per request.',
+    invalidFileType:
+      'Invalid file type. Only images are allowed (png, jpg, jpeg).',
+    invalidFileExtension:
+      'Invalid file extension. Allowed extensions are png, jpg, jpeg.',
+    failedToUpload: 'Failed to upload file. Please try again later.',
+    failedToUploadAll: 'Failed to upload all files. Please try again later.',
 
     // Webhooks
     webhookExists: 'Webhook with this URL already exists',
@@ -105,6 +123,7 @@ module.exports = {
     corsError: 'Not allowed by CORS.'
   },
 
+  // Regular expression patterns for validation
   regexPatterns: {
     shProfileURLPattern:
       /^https:\/\/www\.scribblehub\.com\/profile\/\d+\/[a-zA-Z0-9-_]+\/?$/,
@@ -113,6 +132,7 @@ module.exports = {
       /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/i
   },
 
+  // Status colors for works and profiles
   STATUS_COLORS: {
     pending_review: 0xffcc00, // Yellow
     in_progress: 0x3498db, // Blue
