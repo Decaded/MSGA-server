@@ -95,6 +95,8 @@ module.exports = {
     profileNotFound: 'Profile not found. Please check the ID and try again.',
     invalidStatus:
       'Invalid status. Must be one of: pending_review, in_progress, confirmed, taken_down, original',
+    noChangesDetected: 'No changes detected. Please modify at least one field.',
+    noStatusChange: 'You cannot change the status to the same value.',
 
     // Webhooks
     webhookExists: 'Webhook with this URL already exists',
