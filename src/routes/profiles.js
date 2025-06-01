@@ -33,7 +33,6 @@ const { getDatabase, setDatabase } = require('../utils/db');
 const { sendToAllWebhooks } = require('../utils/webhookNotifier');
 const verifyToken = require('../middleware/verifyToken');
 const { errorMessages, regexPatterns } = require('../config');
-const e = require('express');
 
 const router = express.Router();
 
@@ -70,14 +69,21 @@ router.post('/', (req, res) => {
   const submittedUrl = req.body.url?.trim();
   if (!submittedUrl) {
     logger.warn('Profile submission failed - missing URL');
-    return res.status(400).json({ error: errorMessages.profileUrlRequired });
+    return res.status(400).json({
+      error: errorMessages.profileUrlRequired,
+      details: 'Profile URL is a required field'
+    });
   }
 
   if (!regexPatterns.shProfileURLPattern.test(submittedUrl)) {
     logger.warn('Profile submission failed - invalid URL', {
       url: submittedUrl
     });
-    return res.status(400).json({ error: errorMessages.invalidSHProfileUrl });
+    return res.status(400).json({
+      error: errorMessages.invalidSHProfileUrl,
+      details:
+        'URL must match pattern: https://www.scribblehub.com/profile/###/username/'
+    });
   }
 
   const isDuplicate = Object.values(profiles).some(
@@ -87,7 +93,10 @@ router.post('/', (req, res) => {
     logger.warn('Profile submission failed - duplicate profile', {
       url: submittedUrl
     });
-    return res.status(409).json({ error: errorMessages.profileExists });
+    return res.status(409).json({
+      error: errorMessages.profileExists,
+      details: 'This profile has already been reported in the system'
+    });
   }
 
   const newProfile = {
@@ -133,14 +142,33 @@ router.put('/:id/status', verifyToken, (req, res) => {
     'confirmed_violator',
     'false_positive'
   ];
+
   if (!validStatuses.includes(status)) {
     logger.warn('Invalid status provided', { status });
-    return res.status(400).json({ error: errorMessages.invalidStatus });
+    return res.status(400).json({
+      error: errorMessages.invalidStatus,
+      details: `Valid statuses are: ${validStatuses.join(', ')}`
+    });
   }
 
   if (!profiles[id] || !profile) {
     logger.warn('Status update failed - profile not found', { profileId: id });
-    return res.status(404).json({ error: errorMessages.profileNotFound });
+    return res.status(404).json({
+      error: errorMessages.profileNotFound,
+      details: `Profile with ID ${id} does not exist`
+    });
+  }
+
+  // Check if status is unchanged
+  if (profile.status === status) {
+    logger.warn('Status update failed - no change detected', {
+      profileId: id,
+      currentStatus: profile.status
+    });
+    return res.status(400).json({
+      error: errorMessages.noStatusChange,
+      details: `Profile is already in status: ${status}`
+    });
   }
 
   const oldStatus = profile.status;
@@ -178,7 +206,10 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 
   if (!profiles[id]) {
     logger.warn('Approval failed - profile not found', { profileId: id });
-    return res.status(404).json({ error: errorMessages.profileNotFound });
+    return res.status(404).json({
+      error: errorMessages.profileNotFound,
+      details: `Profile with ID ${id} does not exist`
+    });
   }
 
   profiles[id].approved = true;
@@ -203,7 +234,10 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 router.delete('/:id', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
     logger.warn('Unauthorized delete attempt', { user: req.user.username });
-    return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
+    return res.status(403).json({
+      error: errorMessages.onlyAdminsCanDelete,
+      details: 'Only administrators can delete profiles'
+    });
   }
 
   const id = parseInt(req.params.id);
@@ -214,7 +248,10 @@ router.delete('/:id', verifyToken, (req, res) => {
 
   if (!profileEntry) {
     logger.warn('Delete failed - profile not found', { profileId: id });
-    return res.status(404).json({ error: errorMessages.profileNotFound });
+    return res.status(404).json({
+      error: errorMessages.profileNotFound,
+      details: `Profile with ID ${id} does not exist`
+    });
   }
 
   const [dbKey, profile] = profileEntry;
@@ -245,7 +282,10 @@ router.put('/:id', verifyToken, (req, res) => {
 
   if (!profileEntry) {
     logger.warn('Update failed - profile not found', { profileId: id });
-    return res.status(404).json({ error: errorMessages.profileNotFound });
+    return res.status(404).json({
+      error: errorMessages.profileNotFound,
+      details: `Profile with ID ${id} does not exist`
+    });
   }
 
   if (req.user.role !== 'admin') {
@@ -260,9 +300,12 @@ router.put('/:id', verifyToken, (req, res) => {
           protectedFields.includes(key)
         )
       });
-      return res
-        .status(403)
-        .json({ error: errorMessages.unauthorizedFieldUpdate });
+      return res.status(403).json({
+        error: errorMessages.unauthorizedFieldUpdate,
+        details:
+          'Non-admin users cannot update protected fields: ' +
+          protectedFields.join(', ')
+      });
     }
   }
 
@@ -279,6 +322,18 @@ router.put('/:id', verifyToken, (req, res) => {
     }
   });
 
+  if (Object.keys(changes).length === 0) {
+    logger.info('Profile update request with no changes', { profileId: id });
+    return res.status(400).json({
+      error: errorMessages.noChangesDetected,
+      details: 'No fields were modified in the update request',
+      suggestions: [
+        "Verify you're sending updated field values",
+        'Check that values are different from current profile data'
+      ]
+    });
+  }
+
   logger.info('Sending profile_updated webhook', { profileId: id });
   sendToAllWebhooks('profile_updated', {
     ...profile,
@@ -289,15 +344,11 @@ router.put('/:id', verifyToken, (req, res) => {
   profiles[dbKey] = profile;
   setDatabase('profiles', profiles);
 
-  if (Object.keys(changes).length > 0) {
-    logger.info('Profile updated', {
-      profileId: id,
-      changes,
-      updatedBy: req.user.username
-    });
-  } else {
-    logger.info('Profile update request with no changes', { profileId: id });
-  }
+  logger.info('Profile updated', {
+    profileId: id,
+    changes,
+    updatedBy: req.user.username
+  });
 
   res.json(profile);
 });
