@@ -68,13 +68,20 @@ router.post('/', (req, res) => {
   const submittedUrl = req.body.url?.trim();
   if (!submittedUrl) {
     logger.warn('Work submission failed - missing URL');
-    return res.status(400).json({ error: errorMessages.workUrlRequired });
+    return res.status(400).json({
+      error: errorMessages.workUrlRequired,
+      details: 'Work URL is a required field'
+    });
   }
 
   const pattern = regexPatterns.shWorkURLPattern;
   if (!pattern.test(submittedUrl)) {
     logger.warn('Work submission failed - invalid URL', { url: submittedUrl });
-    return res.status(400).json({ error: errorMessages.invalidSHWorkUrl });
+    return res.status(400).json({
+      error: errorMessages.invalidSHWorkUrl,
+      details:
+        'URL must match pattern: https://www.scribblehub.com/series/###/title/'
+    });
   }
 
   const isDuplicate = Object.values(works).some(
@@ -84,7 +91,10 @@ router.post('/', (req, res) => {
     logger.warn('Work submission failed - duplicate work', {
       url: submittedUrl
     });
-    return res.status(409).json({ error: errorMessages.workExists });
+    return res.status(409).json({
+      error: errorMessages.workExists,
+      details: 'This work has already been reported in the system'
+    });
   }
 
   const newWork = {
@@ -131,20 +141,39 @@ router.put('/:id/status', verifyToken, (req, res) => {
     'taken_down',
     'original'
   ];
+
   if (!validStatuses.includes(status)) {
     logger.warn('Invalid status provided', { status });
-    return res.status(400).json({ error: errorMessages.invalidStatus });
+    return res.status(400).json({
+      error: errorMessages.invalidStatus,
+      details: `Valid statuses are: ${validStatuses.join(', ')}`
+    });
   }
 
   if (!works[id] || !work) {
     logger.warn('Status update failed - work not found', { workId: id });
-    return res.status(404).json({ error: errorMessages.workNotFound });
+    return res.status(404).json({
+      error: errorMessages.workNotFound,
+      details: `Work with ID ${id} does not exist`
+    });
+  }
+
+  // Check if status is unchanged
+  if (work.status === status) {
+    logger.warn('Status update failed - no change detected', {
+      workId: id,
+      currentStatus: work.status
+    });
+    return res.status(400).json({
+      error: errorMessages.noStatusChange,
+      details: `Work status is already '${work.status}'. No change needed.`
+    });
   }
 
   const oldStatus = work.status;
   works[id].status = status;
 
-  // If someone changed status but forgot to approve, auto-approve it
+  // Auto-approve if status changed and not approved
   if (works[id].approved === false) {
     logger.debug(`Auto-approving work during status update`, { workId: id });
     works[id].approved = true;
@@ -174,7 +203,10 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 
   if (!works[id]) {
     logger.warn('Approval failed - work not found', { workId: id });
-    return res.status(404).json({ error: errorMessages.workNotFound });
+    return res.status(404).json({
+      error: errorMessages.workNotFound,
+      details: `Work with ID ${id} does not exist`
+    });
   }
 
   works[id].approved = true;
@@ -199,7 +231,10 @@ router.put('/:id/approve', verifyToken, (req, res) => {
 router.delete('/:id', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
     logger.warn('Unauthorized delete attempt', { user: req.user.username });
-    return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
+    return res.status(403).json({
+      error: errorMessages.onlyAdminsCanDelete,
+      details: 'Only administrators can delete works'
+    });
   }
 
   const id = parseInt(req.params.id);
@@ -208,7 +243,10 @@ router.delete('/:id', verifyToken, (req, res) => {
 
   if (!workEntry) {
     logger.warn('Delete failed - work not found', { workId: id });
-    return res.status(404).json({ error: errorMessages.workNotFound });
+    return res.status(404).json({
+      error: errorMessages.workNotFound,
+      details: `Work with ID ${id} does not exist`
+    });
   }
 
   const [dbKey, work] = workEntry;
@@ -237,7 +275,10 @@ router.put('/:id', verifyToken, (req, res) => {
 
   if (!workEntry) {
     logger.warn('Update failed - work not found', { workId: id });
-    return res.status(404).json({ error: errorMessages.workNotFound });
+    return res.status(404).json({
+      error: errorMessages.workNotFound,
+      details: `Work with ID ${id} does not exist`
+    });
   }
 
   if (req.user.role !== 'admin') {
@@ -252,9 +293,12 @@ router.put('/:id', verifyToken, (req, res) => {
           protectedFields.includes(key)
         )
       });
-      return res
-        .status(403)
-        .json({ error: errorMessages.unauthorizedFieldUpdate });
+      return res.status(403).json({
+        error: errorMessages.unauthorizedFieldUpdate,
+        details:
+          'Non-admin users cannot update protected fields: ' +
+          protectedFields.join(', ')
+      });
     }
   }
 
@@ -271,6 +315,14 @@ router.put('/:id', verifyToken, (req, res) => {
     }
   });
 
+  if (Object.keys(changes).length === 0) {
+    logger.info('Work update request with no changes', { workId: id });
+    return res.status(400).json({
+      error: errorMessages.noChangesDetected,
+      details: 'No fields were modified in the update request',
+    });
+  }
+
   logger.info('Sending work_updated webhook', { workId: id });
   sendToAllWebhooks('work_updated', {
     ...work,
@@ -281,15 +333,11 @@ router.put('/:id', verifyToken, (req, res) => {
   works[dbKey] = work;
   setDatabase('works', works);
 
-  if (Object.keys(changes).length > 0) {
-    logger.info('Work updated', {
-      workId: id,
-      changes,
-      updatedBy: req.user.username
-    });
-  } else {
-    logger.info('Work update request with no changes', { workId: id });
-  }
+  logger.info('Work updated', {
+    workId: id,
+    changes,
+    updatedBy: req.user.username
+  });
 
   res.json(work);
 });
