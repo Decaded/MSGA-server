@@ -63,9 +63,11 @@
  *
  * @property {string} client_version - Client version from client.json.
  * @property {Array} changes - List of changes from client.json.
+ * @property {string} changelog - Changelog from client.json.
+ * @property {string} button_text - Button text from client.json.
  */
 
-const { client_version, changes } = require('./client.json');
+const { client_version, changes, changelog, button_text } = require('./client.json');
 
 require('dotenv').config();
 
@@ -148,5 +150,7 @@ module.exports = {
 
   // Version
   client_version: client_version,
-  changes: changes
+  changes: changes,
+  changelog: changelog,
+  button_text: button_text
 };
