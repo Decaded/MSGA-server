@@ -1,7 +1,44 @@
 {
-  "client_version": "0.114.0-beta",
+  "client_version": "0.115.0-beta",
+  "button_text": "You should click me~",
   "changes": [
-    "Added dynamic refresh of database content. This means that when someone adds or edits a work, other users will see the changes almost immediately.",
-    "Added this modal. Dec can now annoy you with changelog messages. Yay."
+    "Added: changelog page. No one will read it, but it's there.",
+    "Fixed: release modal not displaying correctly on mobile devices."
+  ],
+  "changelog": [
+    {
+      "version": "0.115.0-beta",
+      "date": "2025-06-03",
+      "changes": [
+        "Added: changelog page. No one will read it, but it's there.",
+        "Fixed: release modal not displaying correctly on mobile devices."
+      ]
+    },
+    {
+      "version": "0.114.0-beta",
+      "date": "2025-06-01",
+      "changes": [
+        "Added: dynamic refresh of database content. This means that when someone adds or edits a work, other users will see the changes almost immediately.",
+        "Added: changelog modal. Dec can now annoy you with changelog messages. Yay."
+      ]
+    },
+    {
+      "version": "0.113.0-beta",
+      "date": "2025-05-30",
+      "changes": [
+        "Added: copying direct report links to the clipboard."
+      ]
+    },
+    {
+      "version": "Release-beta",
+      "date": "2025-05-15 — 2025-05-29",
+      "changes": [
+        "Release: Viewing reported content",
+        "Release: Reporting works and profiles",
+        "Release: User registration and login",
+        "Release: Work management by registered users",
+        "Release: User and work management by administrators"
+      ]
+    }
   ]
 }
