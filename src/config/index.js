@@ -11,6 +11,7 @@
  * @property {string[]} env.allowedOrigins - List of allowed CORS origins.
  * @property {string} env.jwtSecret - Secret key for JWT authentication.
  * @property {string} env.jwtExpiration - JWT expiration time (default: '1h').
+ * @property {string} env.route - Base route for the application (default: '/').
  *
  * @property {Object} errorMessages - Standardized error messages used throughout the application.
  * @property {string} errorMessages.noToken - Error message for missing authentication token.
