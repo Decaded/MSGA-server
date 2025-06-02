@@ -27,6 +27,7 @@ const userRoutes = require('./routes/users');
 const workRoutes = require('./routes/works');
 const profileRoutes = require('./routes/profiles');
 const webhookRoutes = require('./routes/webhooks');
+const versionRoutes = require('./routes/version');
 
 const app = express();
 
@@ -46,6 +47,15 @@ const authLimiter = rateLimit({
   max: 5, // limit each IP to 5 requests per windowMs
   message: {
     error: 'Too many attempts, please try again later.'
+  }
+});
+
+// rate limit all other routes to 100 requests per minute
+const generalLimiter = rateLimit({
+  windowMs: 60_000, // 1 minute
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Too many requests, please try again later.'
   }
 });
 
@@ -83,14 +93,15 @@ app.use((err, req, res, next) => {
 
 // Rate limiting for authentication routes
 app.use('/MSGA/login', authLimiter);
-app.use('/MSGA/register', authLimiter);
+app.use('/register', authLimiter);
 
 // Routes
-app.use('/MSGA', authRoutes);
-app.use('/MSGA/users', userRoutes);
-app.use('/MSGA/works', workRoutes);
-app.use('/MSGA/profiles', profileRoutes);
-app.use('/MSGA/webhooks', webhookRoutes);
+app.use('/MSGA', authRoutes, generalLimiter);
+app.use('/MSGA/users', userRoutes, generalLimiter);
+app.use('/MSGA/works', workRoutes, generalLimiter);
+app.use('/MSGA/profiles', profileRoutes, generalLimiter);
+app.use('/MSGA/webhooks', webhookRoutes, generalLimiter);
+app.use('/MSGA/version', versionRoutes, generalLimiter);
 
 app.use((err, req, res, next) => {
   logger.error('Unhandled exception', { error: err.message, stack: err.stack, url: req.originalUrl });
