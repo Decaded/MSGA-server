@@ -1,0 +1,7 @@
+{
+  "client_version": "0.114.0-beta",
+  "changes": [
+    "Added dynamic refresh of database content. This means that when someone adds or edits a work, other users will see the changes almost immediately.",
+    "Added this modal. Dec can now annoy you with changelog messages. Yay."
+  ]
+}
