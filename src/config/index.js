@@ -43,12 +43,28 @@
  * @property {string} errorMessages.invalidWebhookURL - Error message for invalid Discord webhook URL.
  * @property {string} errorMessages.webhookNotFound - Error message for non-existent webhook.
  * @property {string} errorMessages.corsError - Error message for CORS violations.
+ * 
+ * @property {string} errorMessages.versionNotFound - Error message for missing version data in the database.
  *
  * @property {Object} regexPatterns - Regular expression patterns for validation.
  * @property {RegExp} regexPatterns.shProfileURLPattern - Pattern for validating ScribbleHub profile URLs.
  * @property {RegExp} regexPatterns.shWorkURLPattern - Pattern for validating ScribbleHub work URLs.
  * @property {RegExp} regexPatterns.discordWebhookPattern - Pattern for validating Discord webhook URLs.
+ * 
+ * @property {Object} STATUS_COLORS - Color codes for different status types used in Discord embeds.
+ * @property {number} STATUS_COLORS.pending_review - Color for pending review status (yellow).
+ * @property {number} STATUS_COLORS.in_progress - Color for in-progress status (blue).
+ * @property {number} STATUS_COLORS.confirmed_violator - Color for confirmed violator status (red).
+ * @property {number} STATUS_COLORS.false_positive - Color for false positive status (purple/pink).
+ * @property {number} STATUS_COLORS.confirmed - Color for confirmed status (green).
+ * @property {number} STATUS_COLORS.taken_down - Color for taken down status (red).
+ * @property {number} STATUS_COLORS.original - Color for original status (purple/pink).
+ * 
+ * @property {string} client_version - Client version from client.json.
+ * @property {Array} changes - List of changes from client.json.
  */
+
+const { client_version, changes } = require('./client.json');
 
 require('dotenv').config();
 
@@ -104,7 +120,10 @@ module.exports = {
     webhookNotFound: 'Webhook not found',
 
     // System & Validation
-    corsError: 'Not allowed by CORS.'
+    corsError: 'Not allowed by CORS.',
+
+    // Version
+    versionNotFound: 'Version data not found in database.'
   },
 
   regexPatterns: {
@@ -123,5 +142,9 @@ module.exports = {
     confirmed: 0x2ecc71, // Green
     taken_down: 0xe74c3c, // Red
     original: 0x9b59b6 // Purple/Pink
-  }
+  },
+
+  // Version
+  client_version: client_version,
+  changes: changes
 };
