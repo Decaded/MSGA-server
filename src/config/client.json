@@ -1,11 +1,24 @@
 {
-  "client_version": "0.115.0-beta",
-  "button_text": "You should click me~",
+  "client_version": "0.115.2-beta",
+  "button_text": "It works!",
   "changes": [
-    "Added: changelog page. No one will read it, but it's there.",
-    "Fixed: release modal not displaying correctly on mobile devices."
+    "Fixed: fixed a bug that caused login to fail for some users."
   ],
   "changelog": [
+    {
+      "version": "0.115.2-beta",
+      "date": "2025-06-03",
+      "changes": [
+        "Fixed: fixed a bug that caused login to fail for some users."
+      ]
+    },
+    {
+      "version": "0.115.1-beta",
+      "date": "2025-06-03",
+      "changes": [
+        "Login functionality is currently disabled, while we investigate what is going on."
+      ]
+    },
     {
       "version": "0.115.0-beta",
       "date": "2025-06-03",
