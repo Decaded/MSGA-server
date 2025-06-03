@@ -1,10 +1,27 @@
 {
-  "client_version": "0.115.2-beta",
-  "button_text": "It works!",
+  "client_version": "0.116.0-beta",
+  "button_text": "I solemnly swear to read none of this.",
   "changes": [
-    "Fixed: fixed a bug that caused login to fail for some users."
+    "Added: privacy policy.",
+    "Added: terms of service.",
+    "Added: footer with links to the privacy policy, terms of service, and changelog.",
+    "Added: requirement to accept the privacy policy and terms of service during registration.",
+    "Added: requirement to accept the privacy policy and terms of service during login.",
+    "Added: Ko-fi link in the footer to support the project (for those who are insane enough to want to)."
   ],
   "changelog": [
+    {
+      "version": "0.116.0-beta",
+      "date": "2025-06-03",
+      "changes": [
+        "Added: privacy policy.",
+        "Added: terms of service.",
+        "Added: footer with links to the privacy policy, terms of service, and changelog.",
+        "Added: requirement to accept the privacy policy and terms of service during registration.",
+        "Added: requirement to accept the privacy policy and terms of service during login.",
+        "Added: Ko-fi link in the footer to support the project (for those who are insane enough to want to)."
+      ]
+    },
     {
       "version": "0.115.2-beta",
       "date": "2025-06-03",
