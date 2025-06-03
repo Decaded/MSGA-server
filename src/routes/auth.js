@@ -60,11 +60,13 @@ router.post('/login', (req, res) => {
 
   res.json({
     token,
-    id: Number(userId),
-    username: user.username,
-    role: user.role,
-    approved: user.approved,
-    shProfileURL: user.shProfileURL
+    user: {
+      id: Number(userId),
+      username: user.username,
+      role: user.role,
+      approved: user.approved,
+      shProfileURL: user.shProfileURL
+    }
   });
 });
 
