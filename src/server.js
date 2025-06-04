@@ -1,13 +1,30 @@
 /**
- * Main entry point for the MSGA server application.
- *
- * - Loads environment variables from `.env` file.
- * - Initializes Express app and database connection.
- * - Configures CORS and JSON parsing middleware.
- * - Registers authentication, user, and work-related routes.
- * - Starts the server on the configured port.
- *
+ * Main server entry point for the MSGA-server application.
+ * 
+ * - Loads environment variables from `.env`.
+ * - Initializes Express app with security, CORS, JSON parsing, and logging middleware.
+ * - Initializes the database and logs the result.
+ * - Applies rate limiting to authentication routes.
+ * - Sets up API routes for authentication, users, works, profiles, webhooks, and versioning.
+ * - Handles and logs errors at both middleware and server levels.
+ * - Starts the HTTP server on the configured port.
+ * 
  * @module server
+ * @requires dotenv
+ * @requires express
+ * @requires cors
+ * @requires ./middleware/corsConfig
+ * @requires ./middleware/securityHeaders
+ * @requires ./middleware/authLimiter
+ * @requires ./utils/db
+ * @requires ./utils/logger
+ * @requires ./config
+ * @requires ./routes/auth
+ * @requires ./routes/users
+ * @requires ./routes/works
+ * @requires ./routes/profiles
+ * @requires ./routes/webhooks
+ * @requires ./routes/version
  */
 
 require('dotenv').config();
