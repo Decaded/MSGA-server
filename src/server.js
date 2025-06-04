@@ -12,11 +12,11 @@
 
 require('dotenv').config();
 const express = require('express');
-const rateLimit = require('express-rate-limit');
 
 const cors = require('cors');
 const corsOptions = require('./middleware/corsConfig');
 const { securityHeaders } = require('./middleware/securityHeaders');
+const { authLimiter, generalLimiter } = require('./middleware/authLimiter');
 
 const { initDB } = require('./utils/db');
 const logger = require('./utils/logger');
@@ -42,24 +42,6 @@ try {
   logger.error('Database initialization failed', { error: err.message });
   process.exit(1); // Exit if database initialization fails
 }
-
-// 5 requests per minute on login/register to thwart brute‑force
-const authLimiter = rateLimit({
-  windowMs: 60_000, // 1 minute
-  max: 5, // limit each IP to 5 requests per windowMs
-  message: {
-    error: 'Too many attempts, please try again later.'
-  }
-});
-
-// rate limit all other routes to 100 requests per minute
-const generalLimiter = rateLimit({
-  windowMs: 60_000, // 1 minute
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests, please try again later.'
-  }
-});
 
 app.use(cors(corsOptions));
 app.use(express.json());
