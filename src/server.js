@@ -40,6 +40,7 @@ try {
   logger.info('Database initialized successfully');
 } catch (err) {
   logger.error('Database initialization failed', { error: err.message });
+  process.exit(1); // Exit if database initialization fails
 }
 
 // 5 requests per minute on login/register to thwart brute‑force
