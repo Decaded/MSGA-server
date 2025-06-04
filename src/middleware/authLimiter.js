@@ -1,4 +1,4 @@
-const rateLimit = require('../../node_modules/express-rate-limit/dist/index.d.cts');
+const rateLimit = require('express-rate-limit');
 
 // 5 requests per minute on login/register to thwart brute‑force
 const authLimiter = rateLimit({
