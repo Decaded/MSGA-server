@@ -27,12 +27,12 @@
  * @requires ../config
  */
 
-const logger = require('../utils/logger');
+const logger = require('../../utils/logger');
 const express = require('express');
-const { getDatabase, setDatabase } = require('../utils/db');
-const { sendToAllWebhooks } = require('../utils/webhookNotifier');
-const verifyToken = require('../middleware/verifyToken');
-const { errorMessages, regexPatterns } = require('../config');
+const { getDatabase, setDatabase } = require('../../utils/db');
+const { sendToAllWebhooks } = require('../../utils/webhookNotifier');
+const verifyToken = require('../../middleware/verifyToken');
+const { errorMessages, regexPatterns } = require('../../config');
 
 const router = express.Router();
 
@@ -319,7 +319,7 @@ router.put('/:id', verifyToken, (req, res) => {
     logger.info('Work update request with no changes', { workId: id });
     return res.status(400).json({
       error: errorMessages.noChangesDetected,
-      details: 'No fields were modified in the update request',
+      details: 'No fields were modified in the update request'
     });
   }
 

@@ -16,9 +16,9 @@
 
 module.exports = (app, baseRoute, generalLimiter, authLimiter) => {
   const authRoutes = require('./auth');
-  const userRoutes = require('./users');
-  const workRoutes = require('./works');
-  const profileRoutes = require('./profiles');
+  const userRoutes = require('./admin/users');
+  const workRoutes = require('./reports/works');
+  const profileRoutes = require('./reports/profiles');
   const webhookRoutes = require('./webhooks');
   const versionRoutes = require('./version');
 

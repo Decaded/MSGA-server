@@ -22,11 +22,11 @@
  * @requires ../config
  */
 
-const logger = require('../utils/logger');
+const logger = require('../../utils/logger');
 const express = require('express');
-const { getDatabase, setDatabase } = require('../utils/db');
-const verifyToken = require('../middleware/verifyToken');
-const { errorMessages } = require('../config');
+const { getDatabase, setDatabase } = require('../../utils/db');
+const verifyToken = require('../../middleware/verifyToken');
+const { errorMessages } = require('../../config');
 
 const router = express.Router();
 
