@@ -3,6 +3,42 @@
  *
  * @module routes/auth
  */
+
+/**
+ * POST /login
+ * Authenticates a user and returns a JWT token if successful.
+ *
+ * @route POST /login
+ * @param {string} req.body.username - The username of the user.
+ * @param {string} req.body.password - The user's password.
+ * @returns {Object} 200 - An object containing the JWT token and user info.
+ * @returns {Object} 404 - If the user is not found.
+ * @returns {Object} 401 - If the password is incorrect.
+ * @returns {Object} 403 - If the account is not approved.
+ */
+
+/**
+ * POST /register
+ * Registers a new user.
+ *
+ * @route POST /register
+ * @param {string} req.body.username - The username for the new user.
+ * @param {string} req.body.shProfileURL - The SH profile URL for the user.
+ * @param {string} req.body.password - The password for the new user.
+ * @returns {Object} 201 - The newly created user object.
+ * @returns {Object} 400 - If required fields are missing or SH profile URL is invalid.
+ * @returns {Object} 409 - If the username or SH profile URL already exists.
+ */
+
+/**
+ * POST /logout
+ * Logs out the authenticated user by blocking their JWT token.
+ *
+ * @route POST /logout
+ * @middleware verifyToken - Middleware to verify JWT token.
+ * @returns {Object} 200 - Success response.
+ */
+
 const logger = require('../utils/logger');
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -14,18 +50,6 @@ const { env, errorMessages, regexPatterns } = require('../config');
 
 const router = express.Router();
 
-/**
- * POST /login
- * Authenticates a user with username and password.
- *
- * @route POST /login
- * @param {string} req.body.username - The username of the user.
- * @param {string} req.body.password - The password of the user.
- * @returns {Object} 200 - An object containing JWT token and user info.
- * @returns {Object} 404 - If user is not found.
- * @returns {Object} 401 - If password is incorrect.
- * @returns {Object} 403 - If account is not approved.
- */
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
   logger.info('Login attempt', { username });
@@ -70,18 +94,6 @@ router.post('/login', (req, res) => {
   });
 });
 
-/**
- * POST /register
- * Registers a new user.
- *
- * @route POST /register
- * @param {string} req.body.username - The desired username.
- * @param {string} req.body.shProfileURL - The ScribbleHub profile URL.
- * @param {string} req.body.password - The desired password.
- * @returns {Object} 201 - The newly created user object.
- * @returns {Object} 400 - If required fields are missing or URL is invalid.
- * @returns {Object} 409 - If user already exists.
- */
 router.post('/register', (req, res) => {
   const { username, shProfileURL, password } = req.body;
   logger.info('Registration attempt', { username, shProfileURL });
@@ -123,14 +135,6 @@ router.post('/register', (req, res) => {
   res.status(201).json({ id: newId, ...users[newId] });
 });
 
-/**
- * POST /logout
- * Logs out the authenticated user by destroying the session.
- *
- * @route POST /logout
- * @middleware verifyToken
- * @returns {Object} 200 - Success message.
- */
 router.post('/logout', verifyToken, (req, res) => {
   const { jti } = req.user;
   const blockedTokens = getDatabase('blockedTokens');
