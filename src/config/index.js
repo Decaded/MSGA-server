@@ -109,6 +109,9 @@ module.exports = {
     unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
     deletionRequestExists: 'You already have a pending deletion request',
     missingReason: 'Reason is required for deletion request',
+    invalidDeletionAction:
+      'Invalid deletion action. Must be "approve" or "reject"',
+    deletionRequestNotFound: 'Deletion request not found',
 
     // Content Management (Works/Profiles)
     workUrlRequired: 'Work URL is required.',
@@ -143,7 +146,7 @@ module.exports = {
 
   confirmationMessages: {
     passwordUpdated: 'Password updated successfully.',
-    deletionRequestSent:
+    deletionRequestSubmitted:
       'Deletion request submitted. An admin will review it shortly.'
   },
 
