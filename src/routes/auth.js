@@ -127,7 +127,8 @@ router.post('/register', (req, res) => {
     shProfileURL,
     password: hashedPassword,
     role: 'user',
-    approved: false
+    approved: false,
+    dateCreated: new Date().toISOString()
   };
   setDatabase('users', users);
 
