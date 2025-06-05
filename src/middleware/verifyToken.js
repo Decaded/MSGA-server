@@ -10,6 +10,7 @@
  * @param {import('express').NextFunction} next - Express next middleware function.
  * @returns {void}
  */
+
 const jwt = require('jsonwebtoken');
 const { env, errorMessages } = require('../config');
 const { getDatabase } = require('../utils/db');
