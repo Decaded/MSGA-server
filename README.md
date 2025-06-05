@@ -60,6 +60,7 @@ PORT=3000
 ALLOWED_ORIGINS=http://localhost:5173
 JWT_SECRET=yourSuperSecretKey
 JWT_EXPIRATION=1h
+ROUTE=/route/
 ```
 
 ---
