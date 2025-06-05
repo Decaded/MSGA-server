@@ -7,6 +7,7 @@
  * @function bootstrap
  * @returns {Promise<void>} Resolves when the database is initialized.
  */
+
 const { initDB } = require('../utils/db');
 const logger = require('../utils/logger');
 
