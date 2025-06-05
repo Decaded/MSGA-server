@@ -67,7 +67,12 @@
  * @property {string} button_text - Button text from client.json.
  */
 
-const { client_version, changes, changelog, button_text } = require('./client.json');
+const {
+  client_version,
+  changes,
+  changelog,
+  button_text
+} = require('./client.json');
 
 require('dotenv').config();
 
@@ -125,6 +130,10 @@ module.exports = {
 
     // System & Validation
     corsError: 'Not allowed by CORS.',
+
+    // System Errors
+    internalServerError:
+      'An internal server error occurred. Please try again later.',
 
     // Version
     versionNotFound: 'Version data not found in database.'
