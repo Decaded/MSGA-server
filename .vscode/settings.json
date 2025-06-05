@@ -3,10 +3,11 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-    "cSpell.words": [
-      "MSGA",
-      "nosniff",
-      "scribblehub",
-      "uuidv"
-    ]
+  "cSpell.words": [
+    "clickjacking",
+    "MSGA",
+    "nosniff",
+    "scribblehub",
+    "uuidv"
+  ]
 }
