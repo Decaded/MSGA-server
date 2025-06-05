@@ -9,7 +9,13 @@ const authLimiter = rateLimit({
   }
 });
 exports.authLimiter = authLimiter;
-// rate limit all other routes to 100 requests per minute
+
+/**
+ * Express middleware that limits each IP to 100 requests per minute.
+ * Responds with a JSON error message if the rate limit is exceeded.
+ *
+ * @type {import('express').RequestHandler}
+ */
 const generalLimiter = rateLimit({
   windowMs: 60000, // 1 minute
   max: 100, // limit each IP to 100 requests per windowMs
