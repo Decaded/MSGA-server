@@ -1,6 +1,6 @@
 /**
  * Main server entry point for the MSGA-server application.
- * 
+ *
  * - Loads environment variables from `.env`.
  * - Initializes Express app with security, CORS, JSON parsing, and logging middleware.
  * - Initializes the database and logs the result.
@@ -8,7 +8,7 @@
  * - Sets up API routes for authentication, users, works, profiles, webhooks, and versioning.
  * - Handles and logs errors at both middleware and server levels.
  * - Starts the HTTP server on the configured port.
- * 
+ *
  * @module server
  * @requires dotenv
  * @requires express
@@ -40,6 +40,9 @@ const logger = require('./utils/logger');
 
 const { env } = require('./config');
 
+const bootstrap = require('./bootstrap');
+bootstrap();
+
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const workRoutes = require('./routes/works');
@@ -50,15 +53,6 @@ const versionRoutes = require('./routes/version');
 const app = express();
 app.set('trust proxy', 1);
 app.use(securityHeaders);
-
-// Log database initialization
-try {
-  initDB();
-  logger.info('Database initialized successfully');
-} catch (err) {
-  logger.error('Database initialization failed', { error: err.message });
-  process.exit(1); // Exit if database initialization fails
-}
 
 app.use(cors(corsOptions));
 app.use(express.json());
