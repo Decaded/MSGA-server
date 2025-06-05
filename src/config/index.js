@@ -107,6 +107,8 @@ module.exports = {
     adminCannotDeleteSelf: 'Admins cannot delete themselves.',
     approvalRequired: 'Approval status must be provided.',
     unauthorizedFieldUpdate: 'You are not authorized to modify this field.',
+    deletionRequestExists: 'You already have a pending deletion request',
+    missingReason: 'Reason is required for deletion request',
 
     // Content Management (Works/Profiles)
     workUrlRequired: 'Work URL is required.',
@@ -137,6 +139,12 @@ module.exports = {
 
     // Version
     versionNotFound: 'Version data not found in database.'
+  },
+
+  confirmationMessages: {
+    passwordUpdated: 'Password updated successfully.',
+    deletionRequestSent:
+      'Deletion request submitted. An admin will review it shortly.'
   },
 
   regexPatterns: {
