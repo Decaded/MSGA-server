@@ -19,7 +19,14 @@ const NyaDB = require('@decaded/nyadb');
 const db = new NyaDB();
 
 const initDB = () => {
-  const required = ['users', 'works', 'profiles', 'blockedTokens', 'webhooks'];
+  const required = [
+    'users',
+    'works',
+    'profiles',
+    'blockedTokens',
+    'webhooks',
+    'deletionRequests'
+  ];
   required.forEach(name => {
     if (!db.getList().includes(name)) db.create(name);
   });
