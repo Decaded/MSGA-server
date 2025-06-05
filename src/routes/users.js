@@ -1,8 +1,27 @@
 /**
- * Express router for user-related routes.
- *
  * @module routes/users
+ * @description Express router for user management endpoints.
+ *
+ * Endpoints:
+ * - GET /users: Fetch all users (admin only).
+ * - PUT /users/:id: Update user approval status (admin only).
+ * - DELETE /users/:id: Delete a user (admin only, cannot delete self or other admins).
+ *
+ * Middleware:
+ * - verifyToken: Ensures the request is authenticated and attaches user info to req.user.
+ *
+ * Utilities:
+ * - logger: For logging actions and events.
+ * - getDatabase, setDatabase: For accessing and updating the in-memory user database.
+ * - errorMessages: Standardized error messages for responses.
+ *
+ * @requires express
+ * @requires ../utils/logger
+ * @requires ../utils/db
+ * @requires ../middleware/verifyToken
+ * @requires ../config
  */
+
 const logger = require('../utils/logger');
 const express = require('express');
 const { getDatabase, setDatabase } = require('../utils/db');
@@ -11,19 +30,6 @@ const { errorMessages } = require('../config');
 
 const router = express.Router();
 
-/**
- * GET /
- * Retrieves a list of all users.
- * Requires authentication via verifyToken middleware.
- *
- * @name GET /
- * @function
- * @memberof module:routes/users
- * @param {express.Request} req - Express request object.
- * @param {express.Response} res - Express response object.
- * @returns {Object[]} 200 - Array of user objects with id, username, shProfileURL, role, and approved status.
- * @throws {401} Unauthorized - If token verification fails.
- */
 router.get('/', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: errorMessages.onlyAdminsCanAccess });
@@ -41,21 +47,6 @@ router.get('/', verifyToken, (req, res) => {
   res.json(result);
 });
 
-/**
- * PUT /:id
- * Updates the approval status of a user by ID.
- * Requires authentication via verifyToken middleware.
- *
- * @name PUT /:id
- * @function
- * @memberof module:routes/users
- * @param {express.Request} req - Express request object.
- * @param {express.Response} res - Express response object.
- * @returns {Object} 200 - The updated user object.
- * @throws {404} Not Found - If the user does not exist.
- * @throws {400} Bad Request - If the approval status is not provided.
- * @throws {401} Unauthorized - If token verification fails.
- */
 router.put('/:id', verifyToken, (req, res) => {
   logger.info('Updating user approval status', {
     userId: req.params.id,
@@ -81,22 +72,6 @@ router.put('/:id', verifyToken, (req, res) => {
   res.json({ id, ...users[id] });
 });
 
-/**
- * DELETE /:id
- * Deletes a user by ID.
- * Requires authentication via verifyToken middleware and admin privileges.
- *
- * @name DELETE /:id
- * @function
- * @memberof module:routes/users
- * @param {express.Request} req - Express request object.
- * @param {express.Response} res - Express response object.
- * @returns {Object} 200 - Success message with deleted user ID and username.
- * @throws {404} Not Found - If the user does not exist.
- * @throws {403} Forbidden - If the requester is not an admin.
- * @throws {400} Bad Request - If an admin attempts to delete themselves.
- * @throws {401} Unauthorized - If token verification fails.
- */
 router.delete('/:id', verifyToken, (req, res) => {
   logger.info('Attempting to delete user', {
     targetUserId: req.params.id,
