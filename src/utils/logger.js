@@ -1,3 +1,16 @@
+/**
+ * Logger utility using Winston for structured logging with sensitive data redaction.
+ *
+ * - Filters out sensitive fields (e.g., password, token, authorization, jwtSecret, sessionSecret) from logs.
+ * - Logs messages to console with colorized output and to files for error and combined logs.
+ * - Handles unhandled exceptions in production by logging them to a separate file.
+ *
+ * @module logger
+ * @requires winston
+ * @type {winston.Logger}
+ * @exports logger
+ */
+
 const winston = require('winston');
 
 // Filter out sensitive data
