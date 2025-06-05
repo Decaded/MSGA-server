@@ -21,6 +21,9 @@ module.exports = (app, baseRoute, generalLimiter, authLimiter) => {
   const profileRoutes = require('./reports/profiles');
   const webhookRoutes = require('./webhooks');
   const versionRoutes = require('./version');
+const userAccountRoutes = require('./user/profile');
+
+
 
   app.use(baseRoute + 'login', authLimiter);
   app.use(baseRoute + 'register', authLimiter);
@@ -31,4 +34,5 @@ module.exports = (app, baseRoute, generalLimiter, authLimiter) => {
   app.use(baseRoute + 'profiles', profileRoutes, generalLimiter);
   app.use(baseRoute + 'webhooks', webhookRoutes, generalLimiter);
   app.use(baseRoute + 'version', versionRoutes, generalLimiter);
+  app.use(baseRoute + 'user/profile', userAccountRoutes, generalLimiter);
 };
