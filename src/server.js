@@ -29,82 +29,28 @@
 
 require('dotenv').config();
 const express = require('express');
-
-const cors = require('cors');
-const corsOptions = require('./middleware/corsConfig');
-const { securityHeaders } = require('./middleware/securityHeaders');
-const { authLimiter, generalLimiter } = require('./middleware/authLimiter');
-
-const { initDB } = require('./utils/db');
-const logger = require('./utils/logger');
-
 const { env } = require('./config');
 
+const logger = require('./utils/logger');
 const bootstrap = require('./bootstrap');
-bootstrap();
-
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const workRoutes = require('./routes/works');
-const profileRoutes = require('./routes/profiles');
-const webhookRoutes = require('./routes/webhooks');
-const versionRoutes = require('./routes/version');
+const loadMiddleware = require('./middleware');
+const loadRoutes = require('./routes');
 
 const app = express();
-app.set('trust proxy', 1);
-app.use(securityHeaders);
+const { authLimiter, generalLimiter } = loadMiddleware(app);
 
-app.use(cors(corsOptions));
-app.use(express.json());
+bootstrap();
 
-// Request logging middleware
-app.use((req, res, next) => {
-  const { authorization, 'content-type': contentType } = req.headers;
-  const safeHeaders = { authorization, 'content-type': contentType };
+loadRoutes(app, env.route, generalLimiter, authLimiter);
 
-  // Clone and redact sensitive body fields
-  const safeBody = { ...req.body };
-  if (safeBody.password) safeBody.password = '***REDACTED***';
-  if (safeBody.token) safeBody.token = '***REDACTED***';
-
-  logger.info(`${req.method} ${req.originalUrl}`, {
-    ip: req.ip,
-    headers: safeHeaders,
-    body: safeBody
-  });
-  next();
-});
-
-// Error logging middleware
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error', {
-    error: err.message,
-    stack: err.stack,
-    url: req.originalUrl,
-    method: req.method
-  });
-  next(err);
-});
-
-// Rate limiting for authentication routes
-app.use(env.route + 'login', authLimiter);
-app.use(env.route + 'register', authLimiter);
-
-// Routes
-app.use(env.route, authRoutes, generalLimiter);
-app.use(env.route + 'users', userRoutes, generalLimiter);
-app.use(env.route + 'works', workRoutes, generalLimiter);
-app.use(env.route + 'profiles', profileRoutes, generalLimiter);
-app.use(env.route + 'webhooks', webhookRoutes, generalLimiter);
-app.use(env.route + 'version', versionRoutes, generalLimiter);
-
+// Error handler
 app.use((err, req, res, next) => {
   logger.error('Unhandled exception', {
     error: err.message,
     stack: err.stack,
     url: req.originalUrl
   });
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ error: env.errorMessages.internalServerError });
 });
 
 const server = app.listen(env.port, () => {
