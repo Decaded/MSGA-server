@@ -1,15 +1,21 @@
 {
-  "client_version": "0.116.0-beta",
-  "button_text": "I solemnly swear to read none of this.",
+  "client_version": "0.116.1-beta",
+  "button_text": "Yay, semantics!",
   "changes": [
-    "Added: privacy policy.",
-    "Added: terms of service.",
-    "Added: footer with links to the privacy policy, terms of service, and changelog.",
-    "Added: requirement to accept the privacy policy and terms of service during registration.",
-    "Added: requirement to accept the privacy policy and terms of service during login.",
-    "Added: Ko-fi link in the footer to support the project (for those who are insane enough to want to)."
+    "Changed: renamed 'Terms of Use' to 'Terms of Service'.",
+    "Updated: contact email in Privacy Policy.",
+    "Updated: contact email in Terms of Service."
   ],
   "changelog": [
+    {
+      "version": "0.116.1-beta",
+      "date": "2025-06-06",
+      "changes": [
+        "Changed: renamed 'Terms of Use' to 'Terms of Service'.",
+        "Updated: contact email in Privacy Policy.",
+        "Updated: contact email in Terms of Use."
+      ]
+    },
     {
       "version": "0.116.0-beta",
       "date": "2025-06-03",
@@ -19,7 +25,7 @@
         "Added: footer with links to the privacy policy, terms of service, and changelog.",
         "Added: requirement to accept the privacy policy and terms of service during registration.",
         "Added: requirement to accept the privacy policy and terms of service during login.",
-        "Added: Ko-fi link in the footer to support the project (for those who are insane enough to want to)."
+        "Added: Ko-Fi link in the footer to support the project (for those who are insane enough to want to)."
       ]
     },
     {
