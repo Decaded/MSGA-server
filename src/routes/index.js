@@ -7,11 +7,12 @@
  * @param {import('express-rate-limit').RateLimit} authLimiter - Rate limiter middleware for authentication routes.
  *
  * @requires ./auth
- * @requires ./users
- * @requires ./works
- * @requires ./profiles
+ * @requires ./admin/users
+ * @requires ./works/reports
+ * @requires ./reports/profiles
  * @requires ./webhooks
  * @requires ./version
+ * @requires ./user/profile
  */
 
 module.exports = (app, baseRoute, generalLimiter, authLimiter) => {
@@ -21,18 +22,16 @@ module.exports = (app, baseRoute, generalLimiter, authLimiter) => {
   const profileRoutes = require('./reports/profiles');
   const webhookRoutes = require('./webhooks');
   const versionRoutes = require('./version');
-const userAccountRoutes = require('./user/profile');
+  const userAccountRoutes = require('./user/profile');
 
+  app.use(baseRoute + 'login', authLimiter, authRoutes);
+  app.use(baseRoute + 'register', authLimiter, authRoutes);
 
-
-  app.use(baseRoute + 'login', authLimiter);
-  app.use(baseRoute + 'register', authLimiter);
-
-  app.use(baseRoute, authRoutes, generalLimiter);
-  app.use(baseRoute + 'users', userRoutes, generalLimiter);
-  app.use(baseRoute + 'works', workRoutes, generalLimiter);
-  app.use(baseRoute + 'profiles', profileRoutes, generalLimiter);
-  app.use(baseRoute + 'webhooks', webhookRoutes, generalLimiter);
-  app.use(baseRoute + 'version', versionRoutes, generalLimiter);
-  app.use(baseRoute + 'user/profile', userAccountRoutes, generalLimiter);
+  app.use(baseRoute, generalLimiter, authRoutes);
+  app.use(baseRoute + 'users', generalLimiter, userRoutes);
+  app.use(baseRoute + 'works', generalLimiter, workRoutes);
+  app.use(baseRoute + 'profiles', generalLimiter, profileRoutes);
+  app.use(baseRoute + 'webhooks', generalLimiter, webhookRoutes);
+  app.use(baseRoute + 'version', generalLimiter, versionRoutes);
+  app.use(baseRoute + 'user/profile', generalLimiter, userAccountRoutes);
 };
