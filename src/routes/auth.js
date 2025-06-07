@@ -97,7 +97,7 @@ router.post('/login', (req, res) => {
 router.post('/register', (req, res) => {
   const { username, shProfileURL, password } = req.body;
   logger.info('Registration attempt', { username, shProfileURL });
-  if (!username || !shProfileURL || !password)
+  if (!username?.trim() || !shProfileURL?.trim() || !password?.trim())
     return res.status(400).json({ error: errorMessages.missingFields });
   const pattern = regexPatterns.shProfileURLPattern;
   if (!pattern.test(shProfileURL))
