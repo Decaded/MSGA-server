@@ -16,6 +16,8 @@ const winston = require('winston');
 // Filter out sensitive data
 const sensitiveFields = [
   'password',
+  'oldPassword',
+  'newPassword',
   'token',
   'authorization',
   'jwtSecret',
