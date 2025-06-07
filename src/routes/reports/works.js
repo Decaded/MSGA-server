@@ -40,16 +40,6 @@ router.get('/', (req, res) => {
   logger.info('Fetching all works');
   const works = getDatabase('works');
 
-  // Auto-approve any work that slipped through, but only if status is not "pending_review"
-  Object.values(works).forEach(w => {
-    if (w.approved === false && w.status !== 'pending_review') {
-      logger.debug(`Auto-approving work ${w.id}`, { workId: w.id });
-      w.approved = true;
-    }
-  });
-
-  // Update the database with the auto-approved works
-  setDatabase('works', works);
   logger.info('Returning all works', { count: Object.keys(works).length });
   res.json(works);
 });
