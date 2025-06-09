@@ -32,6 +32,7 @@ const express = require('express');
 const { getDatabase, setDatabase } = require('../../utils/db');
 const { sendToAllWebhooks } = require('../../utils/webhookNotifier');
 const verifyToken = require('../../middleware/verifyToken');
+const optionalVerifyToken = require('../../middleware/optionalVerifyToken');
 const { errorMessages, regexPatterns } = require('../../config');
 
 const router = express.Router();
@@ -56,7 +57,7 @@ router.get('/', (req, res) => {
   res.json(profiles);
 });
 
-router.post('/', (req, res) => {
+router.post('/', optionalVerifyToken, (req, res) => {
   logger.info('New profile report submitted', {
     url: req.body.url,
     reporter: req.user ? req.user.username : 'Anonymous'
@@ -99,17 +100,20 @@ router.post('/', (req, res) => {
     });
   }
 
+  // Check if user is authenticated
+  const isLoggedIn = !!req.user;
+
   const newProfile = {
     id: nextIdNum,
     title: req.body.title || `Reported Profile ${nextIdNum}`,
     url: submittedUrl,
-    status: 'pending_review',
+    status: isLoggedIn ? 'in_progress' : 'pending_review',
     reporter: req.body.reporter || (req.user ? req.user.username : 'Anonymous'),
     reason: req.body.reason || '',
     proofs: req.body.proofs?.filter(p => p) || [],
     additionalInfo: req.body.additionalInfo || '',
     dateReported: new Date().toISOString().split('T')[0],
-    approved: false
+    approved: isLoggedIn // Auto-approve if logged in
   };
 
   profiles[nextIdNum] = newProfile;
