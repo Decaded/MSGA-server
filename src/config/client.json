@@ -2,7 +2,6 @@
   "client_version": "0.118.0-beta",
   "button_text": "A smol QoL update UwU",
   "changes": [
-    "Added: auto-approval for reports submitted by authenticated (logged-in) users.",
     "Changed: authenticated users' reports now automatically get approved status.",
     "Changed: authenticated users' reports skip pending review queue.",
     "Changed: 'nickname' field when reporting is now only visible to non-authenticated users."
@@ -12,7 +11,6 @@
       "version": "0.118.0-beta",
       "date": "2025-06-07",
       "changes": [
-        "Added: auto-approval for reports submitted by authenticated (logged-in) users.",
         "Changed: authenticated users' reports now automatically get approved status.",
         "Changed: authenticated users' reports skip pending review queue.",
         "Changed: 'nickname' field when reporting is now only visible to non-authenticated users."
