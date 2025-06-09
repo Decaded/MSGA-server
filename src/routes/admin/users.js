@@ -30,6 +30,7 @@ const { errorMessages } = require('../../config');
 
 const router = express.Router();
 
+// ---- Fetch all users endpoint ----
 router.get('/', verifyToken, (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: errorMessages.onlyAdminsCanAccess });
@@ -47,6 +48,7 @@ router.get('/', verifyToken, (req, res) => {
   res.json(result);
 });
 
+// ---- Update user approval status endpoint ----
 router.put('/:id', verifyToken, (req, res) => {
   logger.info('Updating user approval status', {
     userId: req.params.id,
@@ -72,6 +74,7 @@ router.put('/:id', verifyToken, (req, res) => {
   res.json({ id, ...users[id] });
 });
 
+// ---- Delete user endpoint ----
 router.delete('/:id', verifyToken, (req, res) => {
   logger.info('Attempting to delete user', {
     targetUserId: req.params.id,
@@ -80,6 +83,7 @@ router.delete('/:id', verifyToken, (req, res) => {
 
   const userId = Number(req.params.id);
   const users = getDatabase('users');
+  const deletionRequests = getDatabase('deletionRequests');
 
   const userEntry = Object.entries(users).find(
     ([key]) => Number(key) === userId
@@ -103,15 +107,59 @@ router.delete('/:id', verifyToken, (req, res) => {
     return res.status(403).json({ error: errorMessages.onlyAdminsCanDelete });
   }
 
+  let requestResolved = false;
+  for (const [reqId, reqData] of Object.entries(deletionRequests)) {
+    if (reqData.userId === userId && reqData.status === 'pending') {
+      deletionRequests[reqId] = {
+        ...reqData,
+        status: 'resolved',
+        resolvedDate: new Date().toISOString(),
+        resolvedBy: req.user.id
+      };
+      requestResolved = true;
+      break;
+    }
+  }
+
   delete users[id];
   setDatabase('users', users);
 
   logger.info('User deleted successfully', {
     deletedUserId: userId,
     deletedUsername: user.username,
-    deletedBy: req.user.id
+    deletedBy: req.user.id,
+    requestResolved
   });
-  res.json({ success: true, deletedId: userId, username: user.username });
+
+  if (requestResolved) {
+    setDatabase('deletionRequests', deletionRequests); // Update DB
+  }
+
+  res.json({
+    success: true,
+    deletedId: userId,
+    username: user.username
+  });
+});
+
+// ---- Deletion request endpoints ----
+router.get('/delete-requests', verifyToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: errorMessages.onlyAdminsCanAccess });
+  }
+
+  const deletionRequests = getDatabase('deletionRequests');
+  const pendingRequests = Object.entries(deletionRequests)
+    .filter(([_, request]) => request.status === 'pending')
+    .map(([id, request]) => ({
+      id: Number(id),
+      userId: request.userId,
+      username: request.username,
+      requestDate: request.requestDate,
+      reason: request.reason
+    }));
+
+  res.json(pendingRequests);
 });
 
 module.exports = router;
