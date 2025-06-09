@@ -122,7 +122,7 @@ router.post('/delete-request', (req, res) => {
   const deletionRequests = getDatabase('deletionRequests');
   // Check for existing pending request
   const existingRequest = Object.values(deletionRequests).find(
-    req => req.userId === req.user.id && req.status === 'pending'
+    request => request.userId === req.user.id && request.status === 'pending'
   );
 
   if (existingRequest) {
