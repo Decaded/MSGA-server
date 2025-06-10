@@ -1,12 +1,21 @@
 {
-  "client_version": "0.118.0-beta",
-  "button_text": "A smol QoL update UwU",
+  "client_version": "0.118.1-beta",
+  "button_text": "You must press me now :3",
   "changes": [
-    "Changed: authenticated users' reports now automatically get approved status.",
-    "Changed: authenticated users' reports skip pending review queue.",
-    "Changed: 'nickname' field when reporting is now only visible to non-authenticated users."
+    "Fixed: update modal can no longer be dismissed without clicking the confirmation button below.",
+    "You are now forced to update the app or stare at this modal FOREVAH!",
+    "...your only escape is the blue button. >:3"
   ],
   "changelog": [
+    {
+      "version": "0.118.1-beta",
+      "date": "2025-06-07",
+      "changes": [
+        "Fixed: update modal can no longer be dismissed without clicking the confirmation button below.",
+        "You are now forced to update the app or stare at this modal FOREVAH!",
+        "...your only escape is the blue button. >:3"
+      ]
+    },
     {
       "version": "0.118.0-beta",
       "date": "2025-06-07",
